@@ -2001,7 +2001,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
           children.push(wordParagraph([item.poste, item.dates].filter(Boolean).join(" — "), { bold: true, spacing: { before: 80, after: 20 } }));
           if (item.ent) children.push(wordParagraph(item.ent, { spacing: { after: 30 } }));
           String(item.desc || "").split("\n").map(line => line.trim()).filter(Boolean).forEach(line => {
-            children.push(new Paragraph({ text: line, bullet: { indent: 300 }, spacing: { after: 30 } }));
+            children.push(new Paragraph({ text: line, bullet: { level: 0, indent: 300 }, spacing: { after: 30 } }));
           });
         });
       }
