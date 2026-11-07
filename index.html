@@ -30,14 +30,14 @@
   .tag { display: inline-block; background: var(--tint); color: var(--accent); border-radius: 999px; padding: 3px 11px; margin: 0 6px 6px 0; font-size: 12px; font-weight: bold; }
 
   /* Mise en page : bandeau coloré */
-  .doc[data-layout=bandeau] .hd { background: var(--accent); color: #fff; margin: -48px -52px 24px; padding: 32px 52px; border: none; }
+  .doc[data-layout=bandeau] .hd { background: var(--banner); color: #fff; margin: -48px -52px 24px; padding: 32px 52px; border: none; }
   .doc[data-layout=bandeau] .hd .titre, .doc[data-layout=bandeau] .hd .contact { color: #fff; }
   .doc[data-layout=bandeau] .hd .photo { border: 3px solid #fff; }
 
   /* Mise en page : barre latérale design */
   .doc[data-layout=barre] { padding: 48px 52px; }
   .doc[data-layout=barre] .wrap { display: flex; margin: -48px -52px; min-height: 1123px; background: #fff; }
-  .doc[data-layout=barre] .side { position: relative; isolation: isolate; overflow: hidden; width: 270px; flex-shrink: 0; background: linear-gradient(155deg, #172b4d 0%, #243d65 55%, var(--accent) 100%); color: #fff; padding: 42px 25px 34px; }
+  .doc[data-layout=barre] .side { position: relative; isolation: isolate; overflow: hidden; width: 270px; flex-shrink: 0; background: linear-gradient(155deg, var(--sidebar-start) 0%, #243d65 55%, var(--banner) 100%); color: #fff; padding: 42px 25px 34px; }
   .doc[data-layout=barre] .side::before, .doc[data-layout=barre] .side::after { content: ""; position: absolute; z-index: -1; border-radius: 50%; pointer-events: none; }
   .doc[data-layout=barre] .side::before { width: 310px; height: 310px; top: -190px; right: -155px; background: rgba(255,255,255,.07); }
   .doc[data-layout=barre] .side::after { width: 260px; height: 260px; bottom: -155px; left: -145px; border: 1px solid rgba(255,255,255,.12); }
@@ -95,7 +95,7 @@
   .doc[data-layout=encadre] .sec h3 { background: var(--tint); border: none; border-left: 4px solid var(--accent); padding: 7px 10px; letter-spacing: .08em; }
 
   /* Modèle dégradé */
-  .doc[data-layout=degrade] .hd { background: linear-gradient(120deg, var(--accent), #26364a); color: #fff; margin: -48px -52px 24px; padding: 32px 52px; border: none; }
+  .doc[data-layout=degrade] .hd { background: linear-gradient(120deg, var(--banner), #26364a); color: #fff; margin: -48px -52px 24px; padding: 32px 52px; border: none; }
   .doc[data-layout=degrade] .hd .titre, .doc[data-layout=degrade] .hd .contact { color: #fff; }
   .doc[data-layout=degrade] .hd .photo { border: 3px solid #fff; }
   .doc[data-layout=degrade] .sec h3 { border-bottom: 2px solid var(--tint); }
@@ -443,8 +443,16 @@
               </select>
             </div>
             <div class="col-6">
-              <label class="form-label" for="s-color">Couleur</label>
-              <input type="color" class="form-control form-control-color" id="s-color" data-style="color" title="Couleur d'accent">
+              <label class="form-label" for="s-color">Titres et dates</label>
+              <input type="color" class="form-control form-control-color" id="s-color" data-style="color" title="Couleur des titres et des dates">
+            </div>
+            <div class="col-6 d-none" id="banner-color-control">
+              <label class="form-label" for="s-banner-color">Couleur du bandeau</label>
+              <input type="color" class="form-control form-control-color" id="s-banner-color" data-style="bannerColor" title="Couleur indépendante du bandeau">
+            </div>
+            <div class="col-6 d-none" id="sidebar-start-color-control">
+              <label class="form-label" for="s-sidebar-start-color">Début du dégradé</label>
+              <input type="color" class="form-control form-control-color" id="s-sidebar-start-color" data-style="sidebarStartColor" title="Couleur de départ du dégradé de la barre latérale">
             </div>
             <div class="col-12">
               <label class="form-label" for="s-layout">Mise en page du CV</label>
@@ -777,7 +785,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
     lieu: "", date: "", objet: "", p1: "", p2: "", p3: "", p4: "", formule: "", signature: ""
   });
 
-  let state = { cv: emptyCV(), lettre: emptyLettre(), style: { font: "Arial, sans-serif", color: "#1f3a5f", layout: "classique" } };
+  let state = { cv: emptyCV(), lettre: emptyLettre(), style: { font: "Arial, sans-serif", color: "#1f3a5f", bannerColor: "#1f3a5f", sidebarStartColor: "#172b4d", layout: "classique" } };
 
   // ---------- Utilitaires ----------
   const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -793,6 +801,11 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
     const n = parseInt(hex.slice(1), 16);
     const mix = c => Math.round(c + (255 - c) * (1 - amount));
     return `rgb(${mix(n >> 16)}, ${mix((n >> 8) & 255)}, ${mix(n & 255)})`;
+  }
+  function shadeOf(hex, amount = 0.28) {
+    const n = parseInt(hex.slice(1), 16);
+    const shade = c => Math.round(c * (1 - amount)).toString(16).padStart(2, "0");
+    return `#${shade(n >> 16)}${shade((n >> 8) & 255)}${shade(n & 255)}`;
   }
   function newestFirstExperiences(items) {
     return items.map((item, index) => {
@@ -985,9 +998,15 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
     [$("doc-cv"), $("doc-lettre")].forEach(d => {
       d.style.setProperty("--accent", accent);
       d.style.setProperty("--tint", tintOf(accent, 0.12));
+      const banner = state.style.bannerColor || accent;
+      d.style.setProperty("--banner", banner);
+      d.style.setProperty("--banner-dark", shadeOf(banner));
+      d.style.setProperty("--sidebar-start", state.style.sidebarStartColor || "#172b4d");
       d.style.fontFamily = state.style.font;
     });
     $("doc-cv").dataset.layout = state.style.layout;
+    $("banner-color-control").classList.toggle("d-none", !["bandeau", "barre", "degrade"].includes(state.style.layout));
+    $("sidebar-start-color-control").classList.toggle("d-none", state.style.layout !== "barre");
   }
 
   function checkOverflow() {
@@ -2038,6 +2057,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
   load();
   fillForms();
   $("s-color").value = state.style.color;
+  $("s-banner-color").value = state.style.bannerColor || state.style.color;
   update();
   setTab("cv");
 </script>
