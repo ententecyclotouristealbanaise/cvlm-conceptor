@@ -824,8 +824,12 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
     expNom: "", expAdresse: "", expEmail: "", expTel: "", destNom: "", destAdresse: "",
     lieu: "", date: "", objet: "", p1: "", p2: "", p3: "", p4: "", formule: "", signature: ""
   });
+  const defaultStyle = () => ({
+    font: "Arial, sans-serif", color: "#1f3a5f", bannerColor: "#1f3a5f",
+    sidebarStartColor: "#172b4d", layout: "classique"
+  });
 
-  let state = { cv: emptyCV(), lettre: emptyLettre(), style: { font: "Arial, sans-serif", color: "#1f3a5f", bannerColor: "#1f3a5f", sidebarStartColor: "#172b4d", layout: "classique" } };
+  let state = { cv: emptyCV(), lettre: emptyLettre(), style: defaultStyle() };
 
   // ---------- Utilitaires ----------
   const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -1447,8 +1451,14 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
 
   $("btn-clear").addEventListener("click", () => {
     if (!confirm("Effacer tout le contenu du CV et de la lettre ?")) return;
-    state = { cv: emptyCV(), lettre: emptyLettre(), style: state.style };
+    state = { cv: emptyCV(), lettre: emptyLettre(), style: defaultStyle() };
     fillForms(); update();
+    try {
+      localStorage.removeItem(KEY);
+    } catch (error) {
+      console.error("Impossible de supprimer la sauvegarde locale après l’effacement :", error);
+      alert("Le contenu a été effacé, mais la sauvegarde du navigateur n’a pas pu être supprimée.");
+    }
   });
 
   // ---------- Import d'un CV existant ----------
