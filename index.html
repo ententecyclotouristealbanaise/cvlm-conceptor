@@ -443,7 +443,7 @@
             <label class="btn btn-outline-primary" for="s-import"><i class="bi bi-folder2-open me-1" aria-hidden="true"></i>Choisir un fichier</label>
             <span class="file-picker-hint" aria-hidden="true">PDF ou document Word</span>
           </div>
-          <div class="form-text">PDF, Word (.docx) ou .doc. Les champs du formulaire sont remplis, et la mise en page d'origine est affichée à droite.</div>
+          <div class="form-text">PDF, Word (.docx) ou .doc. Le contenu est repris dans le modèle choisi; vous pouvez aussi consulter la mise en page d'origine.</div>
           <div id="import-note" class="alert alert-info d-none small mt-2 mb-0" aria-live="polite"></div>
         </div>
       </div>
@@ -753,7 +753,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
           <div class="col-md-6 col-xl-3"><div class="card shadow-sm help-step"><div class="card-body">
             <span class="badge rounded-pill text-bg-primary mb-2">4</span>
             <h3 class="h6">Imprimez ou exportez</h3>
-            <p class="small mb-0">Téléchargez un DOCX modifiable avec « Word (.docx) », ou utilisez « Imprimer / PDF ». Le rendu Word peut différer de l’aperçu.</p>
+            <p class="small mb-0">Téléchargez un DOCX modifiable avec « Word (.docx) » : le modèle et les couleurs choisis sont repris. « Imprimer / PDF » conserve le rendu visuel exact de l’aperçu.</p>
           </div></div></div>
         </div>
         <h3 class="h5 mb-3">Questions fréquentes</h3>
@@ -764,11 +764,11 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
           </div>
           <div class="accordion-item">
             <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-import" aria-expanded="false" aria-controls="faq-import">Puis-je importer un CV ou une lettre ?</button></h4>
-            <div id="faq-import" class="accordion-collapse collapse" data-bs-parent="#help-faq"><div class="accordion-body">Oui. L’import du CV récupère les informations et conserve son aperçu d’origine. Pour une lettre, importez un PDF contenant du texte, un fichier Word (.docx) ou texte (.txt) : les rubriques reconnues sont transférées dans le modèle de lettre. La mise en page d’origine de la lettre n’est pas reprise; relisez et corrigez les champs. Les PDF scannés sans texte sélectionnable ne peuvent pas être analysés.</div></div>
+            <div id="faq-import" class="accordion-collapse collapse" data-bs-parent="#help-faq"><div class="accordion-body">Oui. Après l’import d’un CV PDF ou Word, les informations reconnues s’affichent immédiatement dans le modèle choisi. Le bouton « Voir la mise en page d’origine » permet de consulter le document source; modifier un champ applique le modèle de l’application. Pour une lettre, les rubriques reconnues sont transférées dans le modèle de lettre. La mise en page d’origine de la lettre n’est pas reprise; relisez et corrigez les champs. Les PDF scannés sans texte sélectionnable ne peuvent pas être analysés.</div></div>
           </div>
           <div class="accordion-item">
             <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-word" aria-expanded="false" aria-controls="faq-word">Le fichier Word est-il modifiable ?</button></h4>
-            <div id="faq-word" class="accordion-collapse collapse" data-bs-parent="#help-faq"><div class="accordion-body">Oui. « Word (.docx) » crée un vrai document DOCX avec du texte modifiable. Sa mise en page est reconstruite pour Word et peut différer du modèle affiché dans l’aperçu; utilisez « Imprimer / PDF » pour conserver le rendu visuel de l’application.</div></div>
+            <div id="faq-word" class="accordion-collapse collapse" data-bs-parent="#help-faq"><div class="accordion-body">Oui. « Word (.docx) » crée un document DOCX modifiable et reprend la mise en page sélectionnée, les couleurs, les titres et les listes. Les dégradés et certains détails CSS sont adaptés aux possibilités de Word; utilisez « Imprimer / PDF » pour conserver le rendu visuel exact de l’application.</div></div>
           </div>
           <div class="accordion-item">
             <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-gemini" aria-expanded="false" aria-controls="faq-gemini">Comment utiliser Gemini avec l’application ?</button></h4>
@@ -793,6 +793,10 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
     <!-- ===== Aperçu ===== -->
     <div class="col-lg-7 preview-column">
       <div id="warning" class="alert alert-warning no-print d-none" role="alert" aria-live="polite"></div>
+      <div id="import-tools" class="alert alert-info no-print d-none py-2" role="region" aria-label="Affichage du document importé">
+        <button class="btn btn-outline-primary btn-sm" id="btn-toggle-import-view" type="button">Voir la mise en page d'origine</button>
+        <span id="import-view-hint" class="small ms-2">Le CV importé est présenté avec le modèle choisi dans l'application.</span>
+      </div>
       <div id="pdf-tools" class="alert alert-info no-print d-none py-2" role="region" aria-label="Outils d'édition du PDF">
         <button class="btn btn-primary btn-sm" id="btn-add-pdf-text" type="button"><i class="bi bi-plus-lg"></i> Ajouter du texte</button>
         <span id="pdf-tools-hint" class="small ms-2">Le PDF reste fixe. Cliquez à l’endroit souhaité pour placer un bloc, puis vous pouvez le déplacer en le redimensionnant.</span>
@@ -811,6 +815,8 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
   const $ = id => document.getElementById(id);
   const KEY = "cv-lettre-app-v1";
   let importedEl = null;   // mise en page importée affichée dans l'aperçu (null = modèle)
+  let importedSourceEl = null;
+  let importedSourceKind = null;
   let pdfAddMode = false;
   let photoSource = null;
   let photoImage = null;
@@ -1100,7 +1106,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
   document.addEventListener("input", e => {
     const t = e.target;
     // Modifier le CV dans le formulaire remplace la mise en page importée par le modèle
-    if (importedEl && (t.dataset.list || (t.dataset.path || "").startsWith("cv."))) releaseImport();
+    if (importedEl && (t.dataset.list || (t.dataset.path || "").startsWith("cv."))) releaseImport(false);
     if (t.dataset.list) {
       state.cv[t.dataset.list][+t.dataset.idx][t.dataset.key] = t.value;
       update();
@@ -1462,10 +1468,17 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
   });
 
   // ---------- Import d'un CV existant ----------
-  function releaseImport() {
+  function releaseImport(discardSource = true) {
     importedEl = null;
     pdfAddMode = false;
+    if (discardSource) {
+      importedSourceEl = null;
+      importedSourceKind = null;
+    }
     $("pdf-tools").classList.add("d-none");
+    $("import-tools").classList.toggle("d-none", !importedSourceEl);
+    $("btn-toggle-import-view").textContent = "Voir la mise en page d'origine";
+    $("import-view-hint").textContent = "Le CV importé est présenté avec le modèle choisi dans l'application.";
     $("doc-cv").style.cursor = "";
     $("doc-cv").classList.remove("imported", "pdf");
     $("import-note").classList.add("d-none");
@@ -1758,29 +1771,43 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
 
   function showImported(parsed, node, kind) {
     Object.assign(state.cv, parsed);
-    fillForms();                        // remplit les champs (et libère l'ancienne mise en page)
-    importedEl = node;
+    fillForms();                        // remplit les champs et libère l'import précédent
+    importedSourceEl = node;
+    importedSourceKind = kind;
     if (kind === "docx") prepareImportedEditable(node);
     const doc = $("doc-cv");
     doc.innerHTML = "";
-    doc.appendChild(node);
-    doc.classList.add("imported");
-    if (kind === "pdf") {
-      doc.classList.add("pdf");
-      $("pdf-tools").classList.remove("d-none");
-    }
+    doc.classList.remove("imported", "pdf");
+    $("import-tools").classList.remove("d-none");
     setTab("cv");
     update();
 
     const nExp = parsed.exps.length, nForm = parsed.formations.length;
     const note = $("import-note");
     note.textContent = `Importé : ${nExp} expérience(s), ${nForm} formation(s). ` +
-      (kind === "pdf"
-        ? "Mise en page d'origine conservée. Cliquez sur un texte existant pour le corriger et redimensionnez sa zone si nécessaire, ou ajoutez un bloc à l'emplacement voulu. "
-        : "Document affiché à droite : modifiez le texte directement. ") +
-      "Modifier un champ du CV dans le formulaire remplace la mise en page par le modèle.";
+      "Le modèle choisi est appliqué immédiatement. Utilisez « Voir la mise en page d'origine » pour retrouver le document source.";
     note.classList.remove("d-none");
   }
+
+  $("btn-toggle-import-view").addEventListener("click", () => {
+    if (!importedSourceEl) return;
+    const showSource = !importedEl;
+    const doc = $("doc-cv");
+    importedEl = showSource ? importedSourceEl : null;
+    pdfAddMode = false;
+    doc.innerHTML = "";
+    doc.classList.toggle("imported", showSource);
+    doc.classList.toggle("pdf", showSource && importedSourceKind === "pdf");
+    if (showSource) doc.appendChild(importedSourceEl);
+    $("pdf-tools").classList.toggle("d-none", !showSource || importedSourceKind !== "pdf");
+    $("btn-toggle-import-view").textContent = showSource
+      ? "Appliquer le modèle de l'application"
+      : "Voir la mise en page d'origine";
+    $("import-view-hint").textContent = showSource
+      ? "La mise en page originale est affichée. Les champs du formulaire reviennent au modèle de l'application."
+      : "Le CV importé est présenté avec le modèle choisi dans l'application.";
+    update();
+  });
 
   $("btn-add-pdf-text").addEventListener("click", () => {
     pdfAddMode = !pdfAddMode;
@@ -1937,90 +1964,271 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
 
   function wordParagraph(text, options = {}) {
     const { Paragraph, TextRun } = window.docx;
-    const font = state.style.font.split(",")[0].replace(/['"]/g, "").trim();
-    const color = state.style.color.replace("#", "");
-    const runs = String(text || "").split("\n").flatMap((line, index) =>
-      index ? [new TextRun({ break: 1 }), new TextRun({ text: line, font })] : [new TextRun({ text: line, font })]
-    );
-    if (options.bold || options.color || options.size) {
-      return new Paragraph({
-        ...options,
-        children: [new TextRun({
-          text: String(text || ""),
-          font,
-          bold: Boolean(options.bold),
-          color: options.color || color,
-          size: options.size || 22
-        })]
-      });
-    }
-    return new Paragraph({ ...options, children: runs });
+    const {
+      bold, color, size, font: runFont, italics, children, ...paragraphOptions
+    } = options;
+    const font = runFont || (state.style.layout === "editorial"
+      ? "Georgia"
+      : state.style.font.split(",")[0].replace(/['"]/g, "").trim());
+    const runs = children || String(text || "").split("\n").flatMap((line, index) => {
+      const runOptions = { text: line, font };
+      if (bold !== undefined) runOptions.bold = bold;
+      if (color) runOptions.color = color.replace("#", "");
+      if (size) runOptions.size = size;
+      if (italics) runOptions.italics = true;
+      return index ? [new TextRun({ break: 1 }), new TextRun(runOptions)] : [new TextRun(runOptions)];
+    });
+    return new Paragraph({ ...paragraphOptions, children: runs });
   }
 
-  function wordHeading(text) {
-    return wordParagraph(text.toUpperCase(), {
+  function wordHeading(text, options = {}) {
+    const { BorderStyle, ShadingType } = window.docx;
+    const { color = state.style.color, sidebar = false } = options;
+    const compact = state.style.layout === "compact";
+    const boxed = state.style.layout === "encadre" && !sidebar;
+    const paragraphOptions = {
       bold: true,
-      color: state.style.color.replace("#", ""),
-      size: 23,
-      spacing: { before: 200, after: 80 },
-      border: { bottom: { color: "D8DEE8", style: "single", size: 4, space: 3 } }
+      color,
+      size: sidebar ? 19 : 23,
+      spacing: { before: sidebar ? 220 : compact ? 140 : 240, after: compact ? 65 : 100 },
+      border: {
+        bottom: {
+          color: sidebar ? "FFFFFF" : "D8DEE8",
+          style: BorderStyle.SINGLE,
+          size: sidebar ? 3 : 5,
+          space: 4
+        }
+      },
+      keepNext: true
+    };
+    if (boxed) {
+      paragraphOptions.shading = { type: ShadingType.CLEAR, fill: wordTint(state.style.color) };
+      paragraphOptions.border.left = { color: state.style.color.replace("#", "").toUpperCase(), style: BorderStyle.SINGLE, size: 20, space: 6 };
+      paragraphOptions.indent = { left: 120 };
+    }
+    return wordParagraph(text.toUpperCase(), paragraphOptions);
+  }
+
+  function wordImage(photo, width, height) {
+    if (!photo) return null;
+    const match = photo.match(/^data:image\/(png|jpe?g);base64,([\s\S]+)$/i);
+    if (!match) return null;
+    const bytes = Uint8Array.from(atob(match[2]), character => character.charCodeAt(0));
+    const type = match[1].toLowerCase() === "png" ? "png" : "jpg";
+    return new window.docx.ImageRun({
+      data: bytes,
+      transformation: { width, height },
+      type
     });
   }
 
+  function wordTint(hex, amount = 0.12) {
+    const value = parseInt(hex.replace("#", ""), 16);
+    const mix = channel => Math.round(channel + (255 - channel) * (1 - amount));
+    return [mix(value >> 16), mix((value >> 8) & 255), mix(value & 255)]
+      .map(channel => channel.toString(16).padStart(2, "0"))
+      .join("")
+      .toUpperCase();
+  }
+
+  function wordTableCell(children, width, options = {}) {
+    const { TableCell, WidthType, ShadingType, BorderStyle } = window.docx;
+    const { fill, margins = { top: 180, bottom: 180, left: 220, right: 220 } } = options;
+    const border = { style: BorderStyle.NONE, size: 0, color: fill || "FFFFFF" };
+    const cellOptions = {
+      children,
+      width: { size: width, type: WidthType.DXA },
+      margins,
+      borders: {
+        top: border, bottom: border, left: border, right: border,
+        insideHorizontal: border, insideVertical: border
+      }
+    };
+    if (fill) cellOptions.shading = { type: ShadingType.CLEAR, fill };
+    return new TableCell(cellOptions);
+  }
+
   function buildWordDocument(tab) {
-    const { Document, Paragraph, AlignmentType } = window.docx;
+    const {
+      Document, Paragraph, Table, TableRow, WidthType, TableLayoutType,
+      AlignmentType, BorderStyle
+    } = window.docx;
     const children = [];
+    const font = state.style.font.split(",")[0].replace(/['"]/g, "").trim();
+    const accent = state.style.color.replace("#", "").toUpperCase();
+    const banner = (state.style.bannerColor || state.style.color).replace("#", "").toUpperCase();
+    const layout = state.style.layout;
+    const accentBorder = { color: accent, style: BorderStyle.SINGLE, size: 8, space: 6 };
+
     if (tab === "lettre") {
       const l = state.lettre;
       const sender = [l.expNom, l.expAdresse, l.expEmail, l.expTel].filter(Boolean);
       const recipient = [l.destNom, l.destAdresse].filter(Boolean);
-      sender.forEach((line, index) => children.push(wordParagraph(line, { alignment: index === 0 ? AlignmentType.LEFT : AlignmentType.LEFT })));
-      if (sender.length) children.push(new Paragraph({ text: "", spacing: { after: 180 } }));
-      recipient.forEach(line => children.push(wordParagraph(line, { alignment: AlignmentType.RIGHT })));
-      if (recipient.length) children.push(new Paragraph({ text: "", spacing: { after: 260 } }));
-      if (l.lieu || l.date) children.push(wordParagraph([l.lieu, l.date].filter(Boolean).join(", "), { alignment: AlignmentType.RIGHT, spacing: { after: 220 } }));
-      if (l.objet) children.push(wordParagraph(`Objet : ${l.objet}`, { bold: true, spacing: { after: 220 } }));
+      sender.forEach((line, index) => children.push(wordParagraph(line, {
+        bold: index === 0, color: index === 0 ? accent : undefined, size: index === 0 ? 25 : 21,
+        spacing: { after: index === sender.length - 1 ? 180 : 35 }
+      })));
+      recipient.forEach((line, index) => children.push(wordParagraph(line, {
+        alignment: AlignmentType.RIGHT, bold: index === 0, color: index === 0 ? accent : undefined,
+        spacing: { after: index === recipient.length - 1 ? 200 : 35 }
+      })));
+      if (l.lieu || l.date) children.push(wordParagraph([l.lieu, l.date].filter(Boolean).join(", "), {
+        alignment: AlignmentType.RIGHT, color: accent, spacing: { after: 260 }
+      }));
+      if (l.objet) children.push(wordParagraph(`Objet : ${l.objet}`, {
+        bold: true, color: accent, border: { bottom: accentBorder }, spacing: { after: 240 }, keepNext: true
+      }));
       [l.p1, l.p2, l.p3, l.p4].filter(Boolean).forEach(text => {
-        children.push(wordParagraph(text, { alignment: AlignmentType.JUSTIFIED, spacing: { after: 180 } }));
+        children.push(wordParagraph(text, {
+          alignment: AlignmentType.JUSTIFIED, size: 22, spacing: { after: 200, line: 280, lineRule: "auto" }
+        }));
       });
-      if (l.formule) children.push(wordParagraph(l.formule, { spacing: { before: 120, after: 200 } }));
-      if (l.signature) children.push(wordParagraph(l.signature, { spacing: { after: 0 } }));
+      if (l.formule) children.push(wordParagraph(l.formule, {
+        spacing: { before: 200, after: 220, line: 280, lineRule: "auto" }
+      }));
+      if (l.signature) children.push(wordParagraph(l.signature, { bold: true, color: accent, spacing: { after: 0 } }));
     } else {
       const c = state.cv;
       const name = [c.prenom, c.nom].filter(Boolean).join(" ");
-      children.push(wordParagraph(name || "CV", { bold: true, size: 34, color: state.style.color.replace("#", ""), spacing: { after: 80 } }));
-      if (c.titre) children.push(wordParagraph(c.titre, { bold: true, size: 25, color: state.style.color.replace("#", ""), spacing: { after: 120 } }));
-      const contact = [c.email, c.tel, c.adresse, c.ville, c.web].filter(Boolean).join(" · ");
-      if (contact) children.push(wordParagraph(contact, { size: 19, spacing: { after: 180 } }));
-      if (c.profil) children.push(wordHeading("Profil"), wordParagraph(c.profil, { alignment: AlignmentType.JUSTIFIED, spacing: { after: 100 } }));
-
+      const contact = [c.email, c.tel, c.adresse, c.ville, c.web].filter(Boolean).join("  ·  ");
+      const photo = wordImage(c.photo, layout === "barre" ? 112 : 92, layout === "barre" ? 112 : 92);
+      const sidebarLayout = layout === "barre";
+      const sideColor = (state.style.sidebarStartColor || "#172b4d").replace("#", "").toUpperCase();
+      const sidebar = [];
+      const main = [];
       const experiences = newestFirstExperiences(c.exps).map(({ item }) => item).filter(item => item.poste || item.ent || item.dates || item.desc);
-      if (experiences.length) {
-        children.push(wordHeading("Expériences professionnelles"));
+      const formations = c.formations.filter(item => item.diplome || item.ecole || item.annee);
+      const addExperienceSection = target => {
+        if (!experiences.length) return;
+        target.push(wordHeading("Expériences professionnelles", sidebarLayout ? { color: "FFFFFF", sidebar: true } : {}));
         experiences.forEach(item => {
-          children.push(wordParagraph([item.poste, item.dates].filter(Boolean).join(" — "), { bold: true, spacing: { before: 80, after: 20 } }));
-          if (item.ent) children.push(wordParagraph(item.ent, { spacing: { after: 30 } }));
+          target.push(wordParagraph([item.poste, item.dates].filter(Boolean).join("  ·  "), {
+            bold: true, color: sidebarLayout ? "FFFFFF" : "1F2937", size: sidebarLayout ? 21 : 22,
+            spacing: { before: 110, after: 35 }, keepNext: Boolean(item.ent)
+          }));
+          if (item.ent) target.push(wordParagraph(item.ent, {
+            color: sidebarLayout ? "FFFFFF" : "586474", size: 20, spacing: { after: 50 }, keepNext: Boolean(item.desc)
+          }));
           String(item.desc || "").split("\n").map(line => line.trim()).filter(Boolean).forEach(line => {
-            children.push(new Paragraph({ text: line, bullet: { level: 0, indent: 300 }, spacing: { after: 30 } }));
+            target.push(wordParagraph(line, {
+              bullet: { level: 0, indent: sidebarLayout ? 250 : 300 },
+              color: sidebarLayout ? "FFFFFF" : undefined, size: sidebarLayout ? 19 : 20,
+              spacing: { after: 35 }
+            }));
           });
         });
-      }
+      };
+      const addFormationSection = target => {
+        if (!formations.length) return;
+        target.push(wordHeading("Formation", sidebarLayout ? { color: "FFFFFF", sidebar: true } : {}));
+        formations.forEach(item => target.push(wordParagraph([item.diplome, item.ecole, item.annee].filter(Boolean).join("  ·  "), {
+          color: sidebarLayout ? "FFFFFF" : undefined, size: sidebarLayout ? 19 : 21,
+          spacing: { after: 90 }
+        })));
+      };
+      const addSideSection = (heading, value) => {
+        if (!value) return;
+        sidebar.push(wordHeading(heading, { color: "FFFFFF", sidebar: true }));
+        sidebar.push(wordParagraph(value, { color: "FFFFFF", size: 19, spacing: { after: 60 } }));
+      };
 
-      const formations = c.formations.filter(item => item.diplome || item.ecole || item.annee);
-      if (formations.length) {
-        children.push(wordHeading("Formation"));
-        formations.forEach(item => children.push(wordParagraph([item.diplome, item.ecole, item.annee].filter(Boolean).join(" — "), { spacing: { after: 60 } })));
+      if (sidebarLayout) {
+        if (photo) sidebar.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [photo], spacing: { after: 180 } }));
+        sidebar.push(wordParagraph(name || "CV", { bold: true, color: "FFFFFF", size: 29, alignment: AlignmentType.CENTER, spacing: { after: 70 } }));
+        if (c.titre) sidebar.push(wordParagraph(c.titre, { color: "FFFFFF", size: 20, alignment: AlignmentType.CENTER, spacing: { after: 180 } }));
+        if (contact) addSideSection("Contact", contact);
+        addSideSection("Compétences", c.competences.replace(/\s*,\s*/g, "  ·  "));
+        addSideSection("Langues", c.langues);
+        addSideSection("Permis", c.permis);
+        addSideSection("Centres d’intérêt", c.centresInteret);
+        if (c.profil) {
+          main.push(wordHeading("Profil"));
+          main.push(wordParagraph(c.profil, { alignment: AlignmentType.JUSTIFIED, spacing: { after: 150, line: 270, lineRule: "auto" } }));
+        }
+        addExperienceSection(main);
+        addFormationSection(main);
+
+        const sideWidth = 3150;
+        const mainWidth = 7056;
+        const tableBorder = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
+        children.push(new Table({
+          width: { size: sideWidth + mainWidth, type: WidthType.DXA },
+          columnWidths: [sideWidth, mainWidth],
+          layout: TableLayoutType.FIXED,
+          rows: [new TableRow({
+            children: [
+              wordTableCell(sidebar, sideWidth, { fill: sideColor, margins: { top: 360, bottom: 360, left: 300, right: 300 } }),
+              wordTableCell(main, mainWidth, { margins: { top: 300, bottom: 300, left: 420, right: 100 } })
+            ]
+          })],
+          borders: {
+            top: tableBorder, bottom: tableBorder, left: tableBorder, right: tableBorder,
+            insideHorizontal: tableBorder, insideVertical: tableBorder
+          }
+        }));
+      } else {
+        const headerChildren = [];
+        if (photo) headerChildren.push(new Paragraph({ children: [photo], spacing: { after: 90 } }));
+        headerChildren.push(wordParagraph(name || "CV", {
+          bold: true, size: 38, color: layout === "bandeau" || layout === "degrade" ? "FFFFFF" : accent,
+          spacing: { after: 60 }, keepNext: Boolean(c.titre)
+        }));
+        if (c.titre) headerChildren.push(wordParagraph(c.titre, {
+          bold: true, size: 26, color: layout === "bandeau" || layout === "degrade" ? "FFFFFF" : accent,
+          spacing: { after: 90 }, keepNext: Boolean(contact)
+        }));
+        if (contact) headerChildren.push(wordParagraph(contact, {
+          size: 19, color: layout === "bandeau" || layout === "degrade" ? "FFFFFF" : "586474",
+          spacing: { after: 30 }
+        }));
+
+        if (layout === "bandeau" || layout === "degrade") {
+          const headerWidth = 10206;
+          children.push(new Table({
+            width: { size: headerWidth, type: WidthType.DXA },
+            columnWidths: [headerWidth],
+            layout: TableLayoutType.FIXED,
+            rows: [new TableRow({
+              children: [wordTableCell(headerChildren, headerWidth, {
+                fill: banner, margins: { top: 400, bottom: 360, left: 460, right: 460 }
+              })]
+            })],
+            borders: {
+              top: { style: BorderStyle.NONE, size: 0, color: banner },
+              bottom: { style: BorderStyle.NONE, size: 0, color: banner },
+              left: { style: BorderStyle.NONE, size: 0, color: banner },
+              right: { style: BorderStyle.NONE, size: 0, color: banner }
+            }
+          }));
+          children.push(new Paragraph({ text: "", spacing: { after: 150 } }));
+        } else {
+          headerChildren.forEach(child => children.push(child));
+          if (layout !== "minimal") {
+            children.push(new Paragraph({ border: { bottom: accentBorder }, spacing: { after: 140 } }));
+          } else {
+            children.push(new Paragraph({ border: { bottom: { ...accentBorder, size: 16 } }, spacing: { after: 140 } }));
+          }
+        }
+        if (c.profil) {
+          children.push(wordHeading("Profil"));
+          children.push(wordParagraph(c.profil, { alignment: AlignmentType.JUSTIFIED, spacing: { after: 150, line: 270, lineRule: "auto" } }));
+        }
+        addExperienceSection(children);
+        addFormationSection(children);
+        [["Compétences", c.competences], ["Langues", c.langues], ["Permis", c.permis], ["Centres d’intérêt", c.centresInteret]]
+          .filter(([, value]) => value)
+          .forEach(([heading, value]) => {
+            children.push(wordHeading(heading));
+            children.push(wordParagraph(value.replace(/\s*,\s*/g, "  ·  "), { spacing: { after: 80 } }));
+          });
       }
-      [["Compétences", c.competences], ["Langues", c.langues], ["Permis", c.permis], ["Centres d’intérêt", c.centresInteret]]
-        .filter(([, value]) => value)
-        .forEach(([heading, value]) => children.push(wordHeading(heading), wordParagraph(value)));
     }
 
     return new Document({
       styles: {
         default: {
           document: {
-            run: { font: state.style.font.split(",")[0].replace(/['"]/g, "").trim(), size: 22 },
+            run: { font: layout === "editorial" && tab === "cv" ? "Georgia" : font, size: 22 },
             paragraph: { spacing: { after: 100 } }
           }
         }
