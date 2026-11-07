@@ -259,6 +259,25 @@
     box-shadow: 0 3px 8px rgba(32,58,93,.2);
   }
   .workspace-tabs .nav-link .bi { font-size: 1rem; }
+  .file-picker {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .file-picker label { flex: 0 0 auto; }
+  .file-picker-hint {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: #64748b;
+    font-size: .85rem;
+    overflow-wrap: anywhere;
+  }
+  .file-picker input:focus-visible + label {
+    outline: 3px solid rgba(31, 58, 95, .35);
+    outline-offset: 2px;
+  }
   @media (max-width: 575.98px) {
     .brand-mark { width: 36px; height: 36px; border-radius: 11px; }
     .brand-subtitle { display: none; }
@@ -278,6 +297,10 @@
     .doc .ih { flex-wrap: wrap; }
     .doc .meta { white-space: normal; }
     .doc[data-layout=barre] .side .contact-row { overflow-wrap: anywhere; }
+    #editor-column, #editor-column .card, #editor-column .card-body { min-width: 0; }
+    .file-picker { align-items: flex-start; gap: .5rem; }
+    .file-picker label { white-space: nowrap; }
+    .file-picker-hint { overflow-wrap: anywhere; }
     .form-control, .form-select, .btn { font-size: 1rem; }
   }
   .empty-state {
@@ -375,7 +398,11 @@
       <div class="card shadow-sm mb-3">
         <div class="card-body">
           <div class="card-title-sm">Importer un CV existant</div>
-          <input type="file" class="form-control" id="s-import" accept=".pdf,.docx,.doc">
+          <div class="file-picker">
+            <input type="file" class="visually-hidden" id="s-import" accept=".pdf,.docx,.doc">
+            <label class="btn btn-outline-primary" for="s-import"><i class="bi bi-folder2-open me-1" aria-hidden="true"></i>Choisir un fichier</label>
+            <span class="file-picker-hint" aria-hidden="true">PDF ou document Word</span>
+          </div>
           <div class="form-text">PDF, Word (.docx) ou .doc. Les champs du formulaire sont remplis, et la mise en page d'origine est affichée à droite.</div>
           <div id="import-note" class="alert alert-info d-none small mt-2 mb-0" aria-live="polite"></div>
         </div>
@@ -384,7 +411,11 @@
       <div class="card shadow-sm mb-3">
         <div class="card-body">
           <div class="card-title-sm">Importer une lettre de motivation</div>
-          <input type="file" class="form-control" id="s-import-letter" accept=".pdf,.docx,.doc,.txt">
+          <div class="file-picker">
+            <input type="file" class="visually-hidden" id="s-import-letter" accept=".pdf,.docx,.doc,.txt">
+            <label class="btn btn-outline-primary" for="s-import-letter"><i class="bi bi-folder2-open me-1" aria-hidden="true"></i>Choisir un fichier</label>
+            <span class="file-picker-hint" aria-hidden="true">PDF, Word ou texte</span>
+          </div>
           <div class="form-text">PDF, Word (.docx), .doc ou texte (.txt). Le texte est analysé pour remplir les champs de la lettre; vérifiez les rubriques et corrigez-les si nécessaire.</div>
           <div id="letter-import-note" class="alert alert-info d-none small mt-2 mb-0" aria-live="polite"></div>
         </div>
