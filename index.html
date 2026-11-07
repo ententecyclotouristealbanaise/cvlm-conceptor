@@ -8,8 +8,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 
-<!-- Styles des documents (CV et lettre) : utilisés aussi pour l'export Word -->
+<!-- Styles de l'aperçu et de l'impression des documents -->
 <style id="doc-style">
   .doc { width: 794px; max-width: 100%; min-height: 1123px; background: #fff; padding: 48px 52px; box-shadow: 0 2px 12px rgba(0,0,0,.12); color: #222; margin: 0 auto; font-size: 13px; }
   .doc .hd { display: flex; align-items: center; gap: 24px; border-bottom: 4px solid var(--accent); padding-bottom: 16px; margin-bottom: 22px; }
@@ -204,6 +205,81 @@
   .help-mode .preview-column { display: none !important; }
   .help-step { height: 100%; }
   .help-step .badge { min-width: 2rem; }
+  .app-header { background: linear-gradient(115deg, #101b2e 0%, #1b2b46 58%, #263f66 100%) !important; box-shadow: 0 4px 18px rgba(15, 23, 42, .2); }
+  .brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 13px;
+    background: linear-gradient(145deg, #fff, #dbeafe);
+    color: #1d3557;
+    font-size: 1.25rem;
+    box-shadow: inset 0 1px rgba(255,255,255,.7);
+  }
+  .brand-title { color: #fff; font-size: 1rem; font-weight: 750; letter-spacing: .01em; line-height: 1.15; }
+  .brand-subtitle { color: rgba(226,232,240,.72); font-size: .72rem; margin-top: .2rem; }
+  .header-actions { align-items: center; }
+  .header-actions .btn { border-radius: .65rem; }
+  .workspace-tabs {
+    display: flex;
+    gap: .45rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: .45rem;
+    margin: 0 0 1rem;
+    border: 1px solid #e5eaf1;
+    border-radius: 1rem;
+    background: #fff;
+    box-shadow: 0 3px 14px rgba(15,23,42,.06);
+    scrollbar-width: thin;
+  }
+  .workspace-tabs + .row { margin-top: 0; }
+  .workspace-tabs .nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    flex: 1 0 auto;
+    min-height: 42px;
+    border: 0;
+    border-radius: .7rem;
+    color: #536174;
+    font-size: .9rem;
+    font-weight: 650;
+    white-space: nowrap;
+    transition: color .15s ease, background .15s ease, box-shadow .15s ease;
+  }
+  .workspace-tabs .nav-link:hover { background: #f1f5f9; color: #203a5d; }
+  .workspace-tabs .nav-link.active {
+    background: #203a5d;
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(32,58,93,.2);
+  }
+  .workspace-tabs .nav-link .bi { font-size: 1rem; }
+  @media (max-width: 575.98px) {
+    .brand-mark { width: 36px; height: 36px; border-radius: 11px; }
+    .brand-subtitle { display: none; }
+    .header-actions { width: 100%; justify-content: flex-start; }
+    .header-actions { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .header-actions > * { min-width: 0; }
+    .header-actions .btn { width: 100%; min-height: 40px; white-space: normal; }
+    .print-help { width: 100%; }
+    .print-help-popover { right: 0; width: min(390px, calc(100vw - 2rem)); }
+    .workspace-tabs { margin-top: .25rem; }
+    .workspace-tabs .nav-link { padding-inline: .75rem; }
+    .container-fluid.py-3 { padding-left: .65rem !important; padding-right: .65rem !important; }
+    .row.g-4 { --bs-gutter-x: .75rem; --bs-gutter-y: 1rem; }
+    .preview-column { min-width: 0; }
+    .preview-scroll { padding: 2px; }
+    .doc { overflow-wrap: anywhere; }
+    .doc .ih { flex-wrap: wrap; }
+    .doc .meta { white-space: normal; }
+    .doc[data-layout=barre] .side .contact-row { overflow-wrap: anywhere; }
+    .form-control, .form-select, .btn { font-size: 1rem; }
+  }
   .empty-state {
     border: 2px dashed rgba(31, 58, 95, .25);
     border-radius: 1rem;
@@ -262,15 +338,21 @@
 </head>
 <body class="bg-light">
 
-<nav class="navbar navbar-dark bg-dark no-print sticky-top">
-  <div class="container-fluid">
-    <span class="navbar-brand mb-0 h1">CV &amp; lettre de motivation</span>
-    <div class="d-flex gap-2 flex-wrap">
-      <button class="btn btn-outline-light btn-sm" id="btn-demo" aria-label="Charger un exemple complet de CV et de lettre"><i class="bi bi-magic"></i> Exemple complet</button>
-      <button class="btn btn-outline-light btn-sm" id="btn-clear" aria-label="Effacer le formulaire"><i class="bi bi-eraser"></i> Effacer</button>
-      <button class="btn btn-outline-light btn-sm" id="btn-word" aria-label="Exporter en Word"><i class="bi bi-file-earmark-word"></i> Word</button>
+<nav class="navbar navbar-dark app-header no-print sticky-top py-3">
+  <div class="container-fluid px-3 px-lg-4 flex-wrap gap-3">
+    <div class="navbar-brand d-flex align-items-center gap-3 mb-0 me-auto">
+      <span class="brand-mark" aria-hidden="true"><i class="bi bi-file-earmark-person"></i></span>
+      <span>
+        <span class="brand-title d-block">CV &amp; lettre de motivation</span>
+        <span class="brand-subtitle d-block">Créez, personnalisez et exportez vos documents</span>
+      </span>
+    </div>
+    <div class="d-flex gap-2 flex-wrap header-actions">
+      <button class="btn btn-outline-light btn-sm" id="btn-demo" aria-label="Charger un exemple complet de CV et de lettre"><i class="bi bi-stars me-1"></i> Exemple complet</button>
+      <button class="btn btn-outline-light btn-sm" id="btn-clear" aria-label="Effacer le formulaire"><i class="bi bi-eraser me-1"></i> Effacer</button>
+      <button class="btn btn-outline-light btn-sm" id="btn-word" aria-label="Télécharger un document Word au format DOCX"><i class="bi bi-file-earmark-word me-1"></i> Word (.docx)</button>
       <div class="print-help">
-        <button class="btn btn-primary btn-sm" id="btn-print" aria-label="Imprimer ou générer un PDF" aria-describedby="print-help-popover"><i class="bi bi-printer"></i> Imprimer / PDF</button>
+        <button class="btn btn-primary btn-sm" id="btn-print" aria-label="Imprimer ou générer un PDF" aria-describedby="print-help-popover"><i class="bi bi-printer me-1"></i> Imprimer / PDF</button>
         <div class="print-help-popover" id="print-help-popover" role="tooltip">
           <strong>Conseils d’impression</strong>
           <div class="mt-1">Choisissez le papier A4, les marges « Aucune », l’échelle « Taille réelle » (100 %) et activez les arrière-plans. Pour éviter le liseré sur papier, l’imprimante doit proposer le mode sans bordure. Vous pouvez aussi enregistrer en PDF pour vérifier le rendu.</div>
@@ -296,6 +378,15 @@
           <input type="file" class="form-control" id="s-import" accept=".pdf,.docx,.doc">
           <div class="form-text">PDF, Word (.docx) ou .doc. Les champs du formulaire sont remplis, et la mise en page d'origine est affichée à droite.</div>
           <div id="import-note" class="alert alert-info d-none small mt-2 mb-0" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-3">
+        <div class="card-body">
+          <div class="card-title-sm">Importer une lettre de motivation</div>
+          <input type="file" class="form-control" id="s-import-letter" accept=".pdf,.docx,.doc,.txt">
+          <div class="form-text">PDF, Word (.docx), .doc ou texte (.txt). Le texte est analysé pour remplir les champs de la lettre; vérifiez les rubriques et corrigez-les si nécessaire.</div>
+          <div id="letter-import-note" class="alert alert-info d-none small mt-2 mb-0" aria-live="polite"></div>
         </div>
       </div>
 
@@ -366,9 +457,9 @@
       </div>
 
       <ul class="nav nav-tabs mb-3" id="tabs">
-        <li class="nav-item"><button class="nav-link active" data-tab="cv" type="button">CV</button></li>
-        <li class="nav-item"><button class="nav-link" data-tab="lettre" type="button">Lettre de motivation</button></li>
-        <li class="nav-item"><button class="nav-link" data-tab="aide" type="button">Tutoriel &amp; FAQ</button></li>
+        <li class="nav-item"><button class="nav-link active" id="tab-cv" data-tab="cv" type="button">CV</button></li>
+        <li class="nav-item"><button class="nav-link" id="tab-lettre" data-tab="lettre" type="button">Lettre de motivation</button></li>
+        <li class="nav-item"><button class="nav-link" id="tab-aide" data-tab="aide" type="button">Tutoriel &amp; FAQ</button></li>
       </ul>
 
       <!-- Formulaire CV -->
@@ -568,7 +659,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
           <div class="col-md-6 col-xl-3"><div class="card shadow-sm help-step"><div class="card-body">
             <span class="badge rounded-pill text-bg-primary mb-2">1</span>
             <h3 class="h6">Choisissez un point de départ</h3>
-            <p class="small mb-0">Chargez un exemple de CV ou de lettre, ou importez un CV existant en PDF ou Word (.docx).</p>
+            <p class="small mb-0">Chargez un exemple de CV ou de lettre, ou importez un CV ou une lettre existante pour récupérer son contenu.</p>
           </div></div></div>
           <div class="col-md-6 col-xl-3"><div class="card shadow-sm help-step"><div class="card-body">
             <span class="badge rounded-pill text-bg-primary mb-2">2</span>
@@ -583,7 +674,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
           <div class="col-md-6 col-xl-3"><div class="card shadow-sm help-step"><div class="card-body">
             <span class="badge rounded-pill text-bg-primary mb-2">4</span>
             <h3 class="h6">Imprimez ou exportez</h3>
-            <p class="small mb-0">Utilisez « Imprimer / PDF » pour imprimer ou enregistrer un PDF. Survolez ce bouton pour afficher les réglages conseillés.</p>
+            <p class="small mb-0">Téléchargez un DOCX modifiable avec « Word (.docx) », ou utilisez « Imprimer / PDF ». Le rendu Word peut différer de l’aperçu.</p>
           </div></div></div>
         </div>
         <h3 class="h5 mb-3">Questions fréquentes</h3>
@@ -593,8 +684,12 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
             <div id="faq-preview" class="accordion-collapse collapse show" data-bs-parent="#help-faq"><div class="accordion-body">L’aperçu à droite se met à jour dès que vous modifiez un champ. Sur un petit écran, faites défiler la page pour le retrouver sous le formulaire.</div></div>
           </div>
           <div class="accordion-item">
-            <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-import" aria-expanded="false" aria-controls="faq-import">Puis-je importer mon ancien CV ?</button></h4>
-            <div id="faq-import" class="accordion-collapse collapse" data-bs-parent="#help-faq"><div class="accordion-body">Oui. Choisissez un fichier PDF ou Word (.docx). Un PDF est affiché avec sa mise en page d’origine. Modifier les champs du formulaire convertit ensuite le CV vers un modèle de l’application.</div></div>
+            <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-import" aria-expanded="false" aria-controls="faq-import">Puis-je importer un CV ou une lettre ?</button></h4>
+            <div id="faq-import" class="accordion-collapse collapse" data-bs-parent="#help-faq"><div class="accordion-body">Oui. L’import du CV récupère les informations et conserve son aperçu d’origine. Pour une lettre, importez un PDF contenant du texte, un fichier Word (.docx) ou texte (.txt) : les rubriques reconnues sont transférées dans le modèle de lettre. La mise en page d’origine de la lettre n’est pas reprise; relisez et corrigez les champs. Les PDF scannés sans texte sélectionnable ne peuvent pas être analysés.</div></div>
+          </div>
+          <div class="accordion-item">
+            <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-word" aria-expanded="false" aria-controls="faq-word">Le fichier Word est-il modifiable ?</button></h4>
+            <div id="faq-word" class="accordion-collapse collapse" data-bs-parent="#help-faq"><div class="accordion-body">Oui. « Word (.docx) » crée un vrai document DOCX avec du texte modifiable. Sa mise en page est reconstruite pour Word et peut différer du modèle affiché dans l’aperçu; utilisez « Imprimer / PDF » pour conserver le rendu visuel de l’application.</div></div>
           </div>
           <div class="accordion-item">
             <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-gemini" aria-expanded="false" aria-controls="faq-gemini">Comment utiliser Gemini avec l’application ?</button></h4>
@@ -893,7 +988,11 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
   // ---------- Onglets ----------
   function setTab(tab) {
     if (tab === "cv" || tab === "lettre") lastDocumentTab = tab;
-    document.querySelectorAll("#tabs .nav-link").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+    document.querySelectorAll("#tabs .nav-link").forEach(b => {
+      const active = b.dataset.tab === tab;
+      b.classList.toggle("active", active);
+      b.setAttribute("aria-selected", String(active));
+    });
     document.querySelector(".row.g-4").classList.toggle("help-mode", tab === "aide");
     $("pane-cv").classList.toggle("d-none", tab !== "cv");
     $("pane-lettre").classList.toggle("d-none", tab !== "lettre");
@@ -1447,6 +1546,108 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
     return new DOMParser().parseFromString(withBreaks, "text/html").body.textContent;
   }
 
+  function parseLetter(text) {
+    const source = String(text || "")
+      .replace(/\r\n?/g, "\n")
+      .replace(/\u00a0/g, " ");
+    const rawLines = source.split("\n").map(line => line.replace(/[ \t]+/g, " ").trim());
+    const lines = rawLines.filter(Boolean);
+    if (!lines.length) throw new Error("Aucun texte lisible n’a été trouvé. Vérifiez le fichier ou essayez un document texte.");
+
+    const result = emptyLettre();
+    const emails = [...new Set((source.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g) || []))];
+    const phones = [...new Set((source.match(/(?:\+33\s?|0)[1-9](?:[\s.-]?\d{2}){4}/g) || []))];
+    if (emails.length) result.expEmail = emails[0];
+    if (phones.length) result.expTel = phones[0];
+
+    const subjectIndex = lines.findIndex(line => /^(objet|réf(?:érence)?)\s*:/i.test(line));
+    if (subjectIndex >= 0) result.objet = lines[subjectIndex].replace(/^(objet|réf(?:érence)?)\s*:\s*/i, "").trim();
+
+    const datePattern = /\b(?:\d{1,2}\s+)?(?:janv(?:ier)?|févr(?:ier)?|mars|avr(?:il)?|mai|juin|juil(?:let)?|août|sept(?:embre)?|oct(?:obre)?|nov(?:embre)?|déc(?:embre)?)\s+\d{4}\b|\b\d{1,2}[/-]\d{1,2}[/-](?:19|20)?\d{2}\b/i;
+    const dateIndex = lines.findIndex(line => datePattern.test(line));
+    if (dateIndex >= 0) {
+      const dateLine = lines[dateIndex];
+      const dateMatch = dateLine.match(datePattern);
+      result.date = dateMatch?.[0] || "";
+      result.lieu = dateLine.slice(0, dateMatch.index).replace(/[,;:\s-]*(?:le)?\s*$/i, "").trim();
+    }
+
+    const greetingPattern = /^(madame|monsieur|cher(?:e)?\s+(?:madame|monsieur)|à l’attention)/i;
+    const greetingIndex = lines.findIndex(line => greetingPattern.test(line));
+    const closingPattern = /^(je vous prie|veuillez agréer|je vous adresse|recevez|cordialement|respectueusement|bien à vous|salutations distinguées)/i;
+    const closingIndex = lines.findIndex((line, index) => index > greetingIndex && closingPattern.test(line));
+
+    if (greetingIndex >= 0) {
+      const bodyStart = rawLines.findIndex(line => greetingPattern.test(line));
+      const bodyEnd = closingIndex >= 0 ? rawLines.findIndex((line, index) => index >= bodyStart && closingPattern.test(line)) : rawLines.length;
+      const bodyText = rawLines.slice(bodyStart + 1, bodyEnd).join("\n").trim();
+      const paragraphs = bodyText.split(/\n\s*\n/).map(part => part.replace(/\s*\n\s*/g, " ").trim()).filter(Boolean);
+      if (paragraphs.length) {
+        result.p1 = paragraphs[0] || "";
+        result.p2 = paragraphs[1] || "";
+        result.p3 = paragraphs[2] || "";
+        result.p4 = paragraphs.slice(3).join("\n\n");
+      } else if (bodyText) {
+        result.p1 = bodyText.replace(/\s*\n\s*/g, " ").trim();
+      }
+    } else {
+      const start = Math.max(subjectIndex, dateIndex) + 1;
+      const end = closingIndex >= 0 ? closingIndex : lines.length;
+      const bodyLines = lines.slice(start, end).filter(line =>
+        !/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/.test(line)
+        && !/(?:\+33\s?|0)[1-9](?:[\s.-]?\d{2}){4}/.test(line)
+      );
+      if (bodyLines.length) result.p1 = bodyLines.join(" ");
+    }
+
+    const firstSectionIndex = [greetingIndex, subjectIndex, dateIndex].filter(index => index >= 0).sort((a, b) => a - b)[0] ?? lines.length;
+    const headerLines = lines.slice(0, firstSectionIndex);
+    const addressPattern = /\b(?:rue|avenue|av\.|boulevard|bd|chemin|impasse|route|place|allée|quai|résidence|residence)\b|\b\d{5}\s+\D/i;
+    const isContact = line => /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/.test(line)
+      || /(?:\+33\s?|0)[1-9](?:[\s.-]?\d{2}){4}/.test(line);
+    const usefulHeader = headerLines.filter(line => !isContact(line)
+      && !datePattern.test(line)
+      && !/^(?:curriculum\s*vitae|lettre de motivation|objet|réf(?:érence)?)\b/i.test(line));
+    const contactIndex = headerLines.reduce((last, line, index) => isContact(line) ? index : last, -1);
+    let senderLines = contactIndex >= 0
+      ? headerLines.slice(0, contactIndex).filter(line => !datePattern.test(line) && !isContact(line))
+      : usefulHeader.slice(0, 1);
+    if (contactIndex < 0) {
+      while (senderLines.length < usefulHeader.length && addressPattern.test(usefulHeader[senderLines.length])) {
+        senderLines.push(usefulHeader[senderLines.length]);
+      }
+    }
+    if (senderLines[0]) result.expNom = senderLines[0];
+    if (senderLines.length > 1) result.expAdresse = senderLines.slice(1).join(", ");
+
+    if (closingIndex >= 0) {
+      const signatureIndex = lines.findIndex((line, index) => index > closingIndex && !/^pi[eè]ce jointe/i.test(line));
+      if (signatureIndex >= 0) result.signature = lines[signatureIndex];
+      result.formule = lines.slice(closingIndex, signatureIndex >= 0 ? signatureIndex : lines.length).join(" ").trim();
+    }
+
+    if (greetingIndex >= 0) {
+      const recipientLines = contactIndex >= 0
+        ? headerLines.slice(contactIndex + 1).filter(line => !datePattern.test(line))
+        : usefulHeader.slice(senderLines.length);
+      if (recipientLines.length) {
+        const recipientNameIndex = recipientLines.findIndex(line => !addressPattern.test(line));
+        if (recipientNameIndex >= 0) {
+          result.destNom = recipientLines[recipientNameIndex];
+          result.destAdresse = recipientLines.slice(recipientNameIndex + 1).join(", ");
+        } else {
+          result.destAdresse = recipientLines.join(", ");
+        }
+      }
+    }
+
+    const hasLetterText = [result.objet, result.p1, result.p2, result.p3, result.p4, result.formule].some(Boolean);
+    if (!hasLetterText) {
+      throw new Error("Le texte a été extrait, mais aucune lettre n’a été reconnue. Pour une lettre scannée, utilisez l’OCR ou importez un PDF contenant du texte sélectionnable.");
+    }
+    return result;
+  }
+
   function prepareImportedEditable(node) {
     const editableSelectors = ["p", "li", "div", "h1", "h2", "h3", "h4", "h5", "h6", "td", "th"];
     node.querySelectorAll(editableSelectors.join(", ")).forEach(el => {
@@ -1562,28 +1763,62 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
     }
   });
 
-  // ---------- Impression et export Word ----------
-  // Version autonome du document : pour Word, les pages importées deviennent des images
-  function portable(el) {
-    const clone = el.cloneNode(true);
-    const origCanvases = el.querySelectorAll("canvas");
-    clone.querySelectorAll("canvas").forEach((c, i) => {
-      const img = document.createElement("img");
-      img.src = origCanvases[i].toDataURL("image/png");
-      img.width = origCanvases[i].width;
-      img.height = origCanvases[i].height;
-      img.style.cssText = "position:absolute;left:0;top:0";
-      c.replaceWith(img);
-    });
-    clone.querySelectorAll(".pdf-text:not(.edited)").forEach(s => s.remove());
-    clone.querySelectorAll(".pdf-text.edited").forEach(s => {
-      s.style.color = "#111";
-      s.style.background = "#fff";
-      s.removeAttribute("contenteditable");
-    });
-    return clone.outerHTML.replace(/ d-none/g, "");
-  }
+  $("s-import-letter").addEventListener("change", async e => {
+    const file = e.target.files[0];
+    const note = $("letter-import-note");
+    e.target.value = "";
+    if (!file) return;
 
+    note.className = "alert alert-info small mt-2 mb-0";
+    note.textContent = "Lecture du document…";
+    try {
+      const ext = file.name.split(".").pop().toLowerCase();
+      let text = "";
+      if (ext === "txt") {
+        text = await file.text();
+      } else if (ext === "pdf") {
+        if (!window.pdfjsLib) throw new Error("L’outil PDF n’est pas chargé. Vérifiez votre connexion puis réessayez.");
+        text = await pdfPlainText(await file.arrayBuffer());
+      } else if (ext === "docx") {
+        if (!window.mammoth) throw new Error("L’outil Word n’est pas chargé. Vérifiez votre connexion puis réessayez.");
+        text = (await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() })).value;
+      } else if (ext === "doc") {
+        const buffer = await file.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        if (bytes[0] === 0xD0 && bytes[1] === 0xCF) {
+          throw new Error("Ce fichier .doc est au format Word ancien non pris en charge. Ouvrez-le dans Word, enregistrez-le en .docx, puis importez-le à nouveau.");
+        }
+        const parsed = new DOMParser().parseFromString(new TextDecoder("utf-8").decode(buffer), "text/html");
+        const source = parsed.querySelector(".doc") || parsed.body;
+        text = htmlToText(source.innerHTML);
+      } else {
+        throw new Error("Format non pris en charge. Choisissez un fichier PDF, .docx, .doc ou .txt.");
+      }
+
+      const lettre = parseLetter(text);
+      state.lettre = lettre;
+      fillForms();
+      update();
+      setTab("lettre");
+
+      const recognized = [
+        ["coordonnées", lettre.expNom || lettre.expEmail || lettre.expTel],
+        ["destinataire", lettre.destNom],
+        ["date/lieu", lettre.date || lettre.lieu],
+        ["objet", lettre.objet],
+        ["paragraphes", lettre.p1 || lettre.p2 || lettre.p3 || lettre.p4],
+        ["formule/signature", lettre.formule || lettre.signature]
+      ].filter(([, value]) => value).map(([label]) => label);
+      note.className = "alert alert-warning small mt-2 mb-0";
+      note.textContent = `Import effectué. Rubriques repérées : ${recognized.join(", ") || "contenu de la lettre"}. La mise en page source n’est pas reprise : relisez et corrigez les champs dans le modèle, car certaines rubriques peuvent avoir été interprétées approximativement.`;
+    } catch (error) {
+      console.error("Échec de l’import de la lettre :", error);
+      note.className = "alert alert-danger small mt-2 mb-0";
+      note.textContent = error instanceof Error ? error.message : "Impossible de lire ce document. Vérifiez le fichier puis réessayez.";
+    }
+  });
+
+  // ---------- Impression et export Word ----------
   function saveFile(blob, name, desc, accept) {
     if (window.showSaveFilePicker) {
       return showSaveFilePicker({ suggestedName: name, types: [{ description: desc, accept }] })
@@ -1600,19 +1835,128 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
     }
   }
 
-  $("btn-word").addEventListener("click", () => {
+  function wordParagraph(text, options = {}) {
+    const { Paragraph, TextRun } = window.docx;
+    const font = state.style.font.split(",")[0].replace(/['"]/g, "").trim();
+    const color = state.style.color.replace("#", "");
+    const runs = String(text || "").split("\n").flatMap((line, index) =>
+      index ? [new TextRun({ break: 1 }), new TextRun({ text: line, font })] : [new TextRun({ text: line, font })]
+    );
+    if (options.bold || options.color || options.size) {
+      return new Paragraph({
+        ...options,
+        children: [new TextRun({
+          text: String(text || ""),
+          font,
+          bold: Boolean(options.bold),
+          color: options.color || color,
+          size: options.size || 22
+        })]
+      });
+    }
+    return new Paragraph({ ...options, children: runs });
+  }
+
+  function wordHeading(text) {
+    return wordParagraph(text.toUpperCase(), {
+      bold: true,
+      color: state.style.color.replace("#", ""),
+      size: 23,
+      spacing: { before: 200, after: 80 },
+      border: { bottom: { color: "D8DEE8", style: "single", size: 4, space: 3 } }
+    });
+  }
+
+  function buildWordDocument(tab) {
+    const { Document, Paragraph, AlignmentType } = window.docx;
+    const children = [];
+    if (tab === "lettre") {
+      const l = state.lettre;
+      const sender = [l.expNom, l.expAdresse, l.expEmail, l.expTel].filter(Boolean);
+      const recipient = [l.destNom, l.destAdresse].filter(Boolean);
+      sender.forEach((line, index) => children.push(wordParagraph(line, { alignment: index === 0 ? AlignmentType.LEFT : AlignmentType.LEFT })));
+      if (sender.length) children.push(new Paragraph({ text: "", spacing: { after: 180 } }));
+      recipient.forEach(line => children.push(wordParagraph(line, { alignment: AlignmentType.RIGHT })));
+      if (recipient.length) children.push(new Paragraph({ text: "", spacing: { after: 260 } }));
+      if (l.lieu || l.date) children.push(wordParagraph([l.lieu, l.date].filter(Boolean).join(", "), { alignment: AlignmentType.RIGHT, spacing: { after: 220 } }));
+      if (l.objet) children.push(wordParagraph(`Objet : ${l.objet}`, { bold: true, spacing: { after: 220 } }));
+      [l.p1, l.p2, l.p3, l.p4].filter(Boolean).forEach(text => {
+        children.push(wordParagraph(text, { alignment: AlignmentType.JUSTIFIED, spacing: { after: 180 } }));
+      });
+      if (l.formule) children.push(wordParagraph(l.formule, { spacing: { before: 120, after: 200 } }));
+      if (l.signature) children.push(wordParagraph(l.signature, { spacing: { after: 0 } }));
+    } else {
+      const c = state.cv;
+      const name = [c.prenom, c.nom].filter(Boolean).join(" ");
+      children.push(wordParagraph(name || "CV", { bold: true, size: 34, color: state.style.color.replace("#", ""), spacing: { after: 80 } }));
+      if (c.titre) children.push(wordParagraph(c.titre, { bold: true, size: 25, color: state.style.color.replace("#", ""), spacing: { after: 120 } }));
+      const contact = [c.email, c.tel, c.adresse, c.ville, c.web].filter(Boolean).join(" · ");
+      if (contact) children.push(wordParagraph(contact, { size: 19, spacing: { after: 180 } }));
+      if (c.profil) children.push(wordHeading("Profil"), wordParagraph(c.profil, { alignment: AlignmentType.JUSTIFIED, spacing: { after: 100 } }));
+
+      const experiences = newestFirstExperiences(c.exps).map(({ item }) => item).filter(item => item.poste || item.ent || item.dates || item.desc);
+      if (experiences.length) {
+        children.push(wordHeading("Expériences professionnelles"));
+        experiences.forEach(item => {
+          children.push(wordParagraph([item.poste, item.dates].filter(Boolean).join(" — "), { bold: true, spacing: { before: 80, after: 20 } }));
+          if (item.ent) children.push(wordParagraph(item.ent, { spacing: { after: 30 } }));
+          String(item.desc || "").split("\n").map(line => line.trim()).filter(Boolean).forEach(line => {
+            children.push(new Paragraph({ text: line, bullet: { indent: 300 }, spacing: { after: 30 } }));
+          });
+        });
+      }
+
+      const formations = c.formations.filter(item => item.diplome || item.ecole || item.annee);
+      if (formations.length) {
+        children.push(wordHeading("Formation"));
+        formations.forEach(item => children.push(wordParagraph([item.diplome, item.ecole, item.annee].filter(Boolean).join(" — "), { spacing: { after: 60 } })));
+      }
+      [["Compétences", c.competences], ["Langues", c.langues], ["Permis", c.permis], ["Centres d’intérêt", c.centresInteret]]
+        .filter(([, value]) => value)
+        .forEach(([heading, value]) => children.push(wordHeading(heading), wordParagraph(value)));
+    }
+
+    return new Document({
+      styles: {
+        default: {
+          document: {
+            run: { font: state.style.font.split(",")[0].replace(/['"]/g, "").trim(), size: 22 },
+            paragraph: { spacing: { after: 100 } }
+          }
+        }
+      },
+      sections: [{
+        properties: {
+          page: {
+            size: { width: 11906, height: 16838 },
+            margin: { top: 850, right: 850, bottom: 850, left: 850 }
+          }
+        },
+        children
+      }]
+    });
+  }
+
+  $("btn-word").addEventListener("click", async () => {
     const tab = $("doc-cv").classList.contains("d-none") ? "lettre" : "cv";
-    const el = $(tab === "cv" ? "doc-cv" : "doc-lettre");
-    const accent = state.style.color;
-    const css = document.getElementById("doc-style").textContent
-      .replace(/var\(--accent\)/g, accent)
-      .replace(/var\(--tint\)/g, tintOf(accent, 0.12));
-    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-      <head><meta charset="utf-8"><title>${tab === "cv" ? "CV" : "Lettre"}</title><style>${css}</style></head>
-      <body>${portable(el)}</body></html>`;
-    const blob = new Blob(["\ufeff", html], { type: "application/msword" });
-    const base = (`${state.cv.prenom} ${state.cv.nom}`.trim() || "document").replace(/\s+/g, "_");
-    saveFile(blob, `${base}_${tab === "cv" ? "CV" : "Lettre"}.doc`, "Document Word", { "application/msword": [".doc"] });
+    const button = $("btn-word");
+    button.disabled = true;
+    try {
+      if (!window.docx?.Document || !window.docx?.Packer) {
+        throw new Error("L’outil de création DOCX n’a pas pu être chargé. Vérifiez votre connexion internet puis réessayez.");
+      }
+      const document = buildWordDocument(tab);
+      const blob = await window.docx.Packer.toBlob(document);
+      const base = (`${state.cv.prenom} ${state.cv.nom}`.trim() || "document").replace(/\s+/g, "_");
+      await saveFile(blob, `${base}_${tab === "cv" ? "CV" : "Lettre"}.docx`, "Document Word", {
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"]
+      });
+    } catch (error) {
+      console.error("Échec de la création du document DOCX :", error);
+      alert(error instanceof Error ? error.message : "Le document Word n’a pas pu être créé.");
+    } finally {
+      button.disabled = false;
+    }
   });
 
   function preparePrintLayout() {
