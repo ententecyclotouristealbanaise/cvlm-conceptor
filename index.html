@@ -1,0 +1,1670 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Créateur de CV et lettre de motivation</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<!-- Styles des documents (CV et lettre) : utilisés aussi pour l'export Word -->
+<style id="doc-style">
+  .doc { width: 794px; max-width: 100%; min-height: 1123px; background: #fff; padding: 48px 52px; box-shadow: 0 2px 12px rgba(0,0,0,.12); color: #222; margin: 0 auto; font-size: 13px; }
+  .doc .hd { display: flex; align-items: center; gap: 24px; border-bottom: 4px solid var(--accent); padding-bottom: 16px; margin-bottom: 22px; }
+  .photo { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+  .name { font-size: 34px; font-weight: 800; letter-spacing: -.5px; line-height: 1.1; }
+  .titre { font-size: 15px; color: var(--accent); margin: 4px 0 8px; font-weight: bold; }
+  .contact { font-size: 12px; color: #555; line-height: 1.6; }
+  .sec { margin-bottom: 20px; }
+  .sec h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .14em; font-weight: bold; color: var(--accent); margin: 0 0 12px; border-bottom: 1px solid #e2e2e2; padding-bottom: 4px; }
+  .profil { font-size: 13px; line-height: 1.6; margin: 0; white-space: pre-line; }
+  .item { margin-bottom: 14px; font-size: 13px; line-height: 1.5; }
+  .ih { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+  .item b { font-size: 14px; color: #111; }
+  .meta { color: var(--accent); font-size: 12px; font-weight: bold; white-space: nowrap; }
+  .org { color: #555; font-size: 12.5px; }
+  .desc { margin: 4px 0 0; padding-left: 18px; color: #444; font-size: 12.5px; line-height: 1.55; }
+  .tag { display: inline-block; background: var(--tint); color: var(--accent); border-radius: 999px; padding: 3px 11px; margin: 0 6px 6px 0; font-size: 12px; font-weight: bold; }
+
+  /* Mise en page : bandeau coloré */
+  .doc[data-layout=bandeau] .hd { background: var(--accent); color: #fff; margin: -48px -52px 24px; padding: 32px 52px; border: none; }
+  .doc[data-layout=bandeau] .hd .titre, .doc[data-layout=bandeau] .hd .contact { color: #fff; }
+  .doc[data-layout=bandeau] .hd .photo { border: 3px solid #fff; }
+
+  /* Mise en page : barre latérale design */
+  .doc[data-layout=barre] { padding: 48px 52px; }
+  .doc[data-layout=barre] .wrap { display: flex; margin: -48px -52px; min-height: 1123px; background: #fff; }
+  .doc[data-layout=barre] .side { position: relative; isolation: isolate; overflow: hidden; width: 270px; flex-shrink: 0; background: linear-gradient(155deg, #172b4d 0%, #243d65 55%, var(--accent) 100%); color: #fff; padding: 42px 25px 34px; }
+  .doc[data-layout=barre] .side::before, .doc[data-layout=barre] .side::after { content: ""; position: absolute; z-index: -1; border-radius: 50%; pointer-events: none; }
+  .doc[data-layout=barre] .side::before { width: 310px; height: 310px; top: -190px; right: -155px; background: rgba(255,255,255,.07); }
+  .doc[data-layout=barre] .side::after { width: 260px; height: 260px; bottom: -155px; left: -145px; border: 1px solid rgba(255,255,255,.12); }
+  .doc[data-layout=barre] .side-head { text-align: center; margin-bottom: 36px; }
+  .doc[data-layout=barre] .side .photo { display: block; margin: 0 auto 20px; width: 138px; height: 138px; border: 5px solid rgba(255,255,255,.9); box-shadow: 0 8px 24px rgba(0,0,0,.24); }
+  .doc[data-layout=barre] .side .name { font-size: 24px; line-height: 1.15; letter-spacing: .01em; overflow-wrap: anywhere; }
+  .doc[data-layout=barre] .side .titre { display: inline-block; margin: 10px 0 0; padding: 6px 11px; border: 1px solid rgba(255,255,255,.26); border-radius: 999px; background: rgba(255,255,255,.1); color: #fff; font-size: 11px; line-height: 1.35; }
+  .doc[data-layout=barre] .side .sec { margin-bottom: 27px; }
+  .doc[data-layout=barre] .side h3 { display: flex; align-items: center; gap: 9px; color: #fff; border: 0; padding: 0 0 9px; margin-bottom: 12px; font-size: 11px; letter-spacing: .15em; }
+  .doc[data-layout=barre] .side h3::after { content: ""; height: 1px; flex: 1; background: rgba(255,255,255,.28); }
+  .doc[data-layout=barre] .side .contact-list { display: grid; gap: 11px; }
+  .doc[data-layout=barre] .side .contact-row { display: flex; align-items: flex-start; gap: 10px; font-size: 11.5px; line-height: 1.45; overflow-wrap: anywhere; }
+  .doc[data-layout=barre] .side .contact-icon { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 25px; width: 25px; height: 25px; border-radius: 8px; background: rgba(255,255,255,.13); color: #fff; font-size: 12px; }
+  .doc[data-layout=barre] .side .tag { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); color: #fff; border-radius: 8px; padding: 5px 9px; margin: 0 4px 6px 0; font-size: 10.5px; }
+  .doc[data-layout=barre] .side .item { font-size: 11.5px; margin-bottom: 8px; color: rgba(255,255,255,.88); }
+  .doc[data-layout=barre] .side .item b, .doc[data-layout=barre] .side .org, .doc[data-layout=barre] .side .meta { color: #fff; }
+  .doc[data-layout=barre] .main { flex: 1; min-width: 0; padding: 48px 39px 40px; }
+  .doc[data-layout=barre] .main .sec h3 { display: flex; align-items: center; gap: 10px; border: 0; padding-bottom: 0; margin-bottom: 15px; font-size: 12px; letter-spacing: .12em; }
+  .doc[data-layout=barre] .main .sec h3::before { content: ""; width: 4px; height: 17px; border-radius: 4px; background: var(--accent); }
+  .doc[data-layout=barre] .main .sec h3::after { content: ""; height: 1px; flex: 1; background: #e8ebf0; }
+  .doc[data-layout=barre] .main .sec:first-child .profil { border: 1px solid #e8ebf0; border-left: 3px solid var(--accent); border-radius: 0 10px 10px 0; background: #f8f9fb; padding: 13px 15px; }
+  .doc[data-layout=barre] .main .item { position: relative; margin: 0 0 18px 5px; padding: 0 0 1px 18px; border-left: 1px solid #dfe4ec; }
+  .doc[data-layout=barre] .main .item::before { content: ""; position: absolute; left: -5px; top: 4px; width: 9px; height: 9px; border: 2px solid #fff; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .doc[data-layout=barre] .main .item b { font-size: 13px; }
+  .doc[data-layout=barre] .main .meta { display: inline-block; border-radius: 999px; background: var(--tint); padding: 3px 8px; font-size: 10px; }
+  .doc[data-layout=barre] .main .org { margin-top: 3px; font-size: 11.5px; }
+  .doc[data-layout=barre] .main .desc { margin-top: 5px; padding-left: 14px; font-size: 11.5px; }
+
+  /* Modèle minimal */
+  .doc[data-layout=minimal] { border-top: 10px solid var(--accent); }
+  .doc[data-layout=minimal] .hd { border-bottom: 1px solid #ddd; }
+  .doc[data-layout=minimal] .sec h3 { letter-spacing: .04em; border-bottom: none; padding-bottom: 0; }
+  .doc[data-layout=minimal] .tag { background: transparent; border: 1px solid var(--tint); }
+
+  /* Modèle éditorial */
+  .doc[data-layout=editorial] { font-family: Georgia, serif; }
+  .doc[data-layout=editorial] .hd { border-bottom: 1px solid #bbb; }
+  .doc[data-layout=editorial] .name { color: var(--accent); font-weight: 600; }
+  .doc[data-layout=editorial] .sec h3 { font-family: Arial, sans-serif; border-bottom: 2px solid var(--accent); letter-spacing: .08em; }
+  .doc[data-layout=editorial] .item { border-left: 2px solid var(--tint); padding-left: 12px; }
+
+  /* Modèle compact */
+  .doc[data-layout=compact] { padding-top: 36px; padding-bottom: 36px; }
+  .doc[data-layout=compact] .hd { gap: 18px; padding-bottom: 12px; margin-bottom: 16px; }
+  .doc[data-layout=compact] .name { font-size: 30px; }
+  .doc[data-layout=compact] .sec { margin-bottom: 13px; }
+  .doc[data-layout=compact] .sec h3 { margin-bottom: 7px; }
+  .doc[data-layout=compact] .item { margin-bottom: 8px; line-height: 1.4; }
+  .doc[data-layout=compact] .desc { line-height: 1.35; }
+
+  /* Modèle encadré */
+  .doc[data-layout=encadre] { border: 1px solid #d8dee8; border-top: 8px solid var(--accent); }
+  .doc[data-layout=encadre] .hd { border: none; margin-bottom: 16px; }
+  .doc[data-layout=encadre] .photo { border: 4px solid var(--tint); }
+  .doc[data-layout=encadre] .sec h3 { background: var(--tint); border: none; border-left: 4px solid var(--accent); padding: 7px 10px; letter-spacing: .08em; }
+
+  /* Modèle dégradé */
+  .doc[data-layout=degrade] .hd { background: linear-gradient(120deg, var(--accent), #26364a); color: #fff; margin: -48px -52px 24px; padding: 32px 52px; border: none; }
+  .doc[data-layout=degrade] .hd .titre, .doc[data-layout=degrade] .hd .contact { color: #fff; }
+  .doc[data-layout=degrade] .hd .photo { border: 3px solid #fff; }
+  .doc[data-layout=degrade] .sec h3 { border-bottom: 2px solid var(--tint); }
+
+  /* Import : PDF rendu page par page, texte modifiable par-dessus */
+  .doc.imported.pdf { padding: 0; background: transparent; box-shadow: none; min-height: 0; }
+  .pdf-page { position: relative; margin: 0 auto 16px; background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,.12); overflow: hidden; }
+  .pdf-page canvas { position: absolute; left: 0; top: 0; display: block; }
+  .pdf-text { position: absolute; display: inline-block; white-space: pre; color: transparent; font-family: Arial, sans-serif; outline: none; cursor: text; padding: 0 1px; }
+  .pdf-text.edited, .pdf-text:focus { background: #fff; color: #111; }
+  .pdf-text.edited:not(.pdf-added) { overflow: auto !important; resize: both; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .pdf-text.pdf-added { z-index: 2; width: 220px; min-height: 42px; max-width: calc(100% - 8px); padding: 4px; white-space: pre-wrap; overflow-wrap: anywhere; overflow: auto; resize: both; border: 1px dashed rgba(31,58,95,.65); background: rgba(255,255,255,.96); color: #111; }
+  .imported { position: relative; }
+  .imported [contenteditable="true"] { outline: none; }
+  .imported [contenteditable="true"]:focus { background: rgba(31,58,95,.04); box-shadow: inset 0 0 0 1px rgba(31,58,95,.16); }
+  .imported ul { list-style: none; padding-left: 0; }
+  .imported li { list-style: none; }
+
+  /* Lettre de motivation */
+  .lt { line-height: 1.6; }
+  .lt p { margin: 0 0 12px; white-space: pre-line; }
+  .lt .exp { text-align: left; }
+  .lt .dest { margin-left: auto; width: 50%; margin-bottom: 24px; }
+  .lt .objet b { color: var(--accent); }
+</style>
+
+<!-- Styles de l'application -->
+<style>
+  body {
+    background: linear-gradient(180deg, #eef3ff 0%, #f7f9fc 100%);
+  }
+  .preview-scroll { overflow: auto; padding: 8px; }
+  @media (min-width: 992px) {
+    .preview-column {
+      position: sticky;
+      top: 76px;
+      align-self: flex-start;
+      max-height: calc(100vh - 84px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+    }
+    .preview-scroll { overflow: visible; padding: 8px 0; }
+    .preview-column .doc { margin-left: auto; margin-right: auto; }
+  }
+  .form-control-color { width: 100%; }
+  .card-title-sm { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: #666; font-weight: 600; margin-bottom: 8px; }
+  .navbar {
+    box-shadow: 0 6px 18px rgba(15, 23, 42, .12);
+  }
+  .nav-tabs .nav-link {
+    border-radius: 0.75rem 0.75rem 0 0;
+    font-weight: 600;
+  }
+  .nav-tabs .nav-link.active {
+    background: #fff;
+    box-shadow: inset 0 -2px 0 var(--accent, #1f3a5f);
+  }
+  .card {
+    border: 1px solid rgba(148, 163, 184, .2);
+    border-radius: 1rem;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, .04) !important;
+  }
+  .form-control, .form-select {
+    border-radius: 0.75rem;
+    border-color: rgba(148, 163, 184, .45);
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--accent, #1f3a5f);
+    box-shadow: 0 0 0 0.15rem rgba(31, 58, 95, .15);
+  }
+  .btn {
+    border-radius: 0.75rem;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+  .print-help { position: relative; }
+  .print-help-popover {
+    position: absolute;
+    z-index: 1080;
+    top: calc(100% + .5rem);
+    right: 0;
+    width: min(390px, 90vw);
+    padding: .85rem 1rem;
+    border: 1px solid rgba(148, 163, 184, .5);
+    border-radius: .75rem;
+    background: #fff;
+    color: #263445;
+    box-shadow: 0 .5rem 1.5rem rgba(0, 0, 0, .18);
+    font-size: .85rem;
+    line-height: 1.45;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity .15s ease, transform .15s ease, visibility .15s;
+  }
+  .print-help:hover .print-help-popover,
+  .print-help:focus-within .print-help-popover {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  .help-mode #editor-column { flex: 0 0 100%; width: 100%; }
+  .help-mode .preview-column { display: none !important; }
+  .help-step { height: 100%; }
+  .help-step .badge { min-width: 2rem; }
+  .empty-state {
+    border: 2px dashed rgba(31, 58, 95, .25);
+    border-radius: 1rem;
+    background: rgba(31, 58, 95, .04);
+    color: #465569;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: .02em;
+  }
+  .photo-crop-preview {
+    display: block;
+    width: 220px;
+    max-width: 100%;
+    height: auto;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 1px rgba(31,58,95,.2), 0 6px 16px rgba(15,23,42,.12);
+    background: #f1f4f8;
+  }
+
+  @media (max-width: 900px) {
+    .doc { width: 100%; padding: 24px 18px; min-height: auto; }
+    .doc[data-layout=bandeau] .hd { margin: -24px -18px 20px; padding: 24px 18px; flex-direction: column; align-items: flex-start; }
+    .doc[data-layout=degrade] .hd { margin: -24px -18px 20px; padding: 24px 18px; flex-direction: column; align-items: flex-start; }
+    .doc[data-layout=barre] .wrap { flex-direction: column; margin: -24px -18px; }
+    .doc[data-layout=barre] .side { width: 100%; padding: 28px 22px; }
+    .doc[data-layout=barre] .side-head { margin-bottom: 25px; }
+    .doc[data-layout=barre] .side .photo { width: 112px; height: 112px; }
+    .doc[data-layout=barre] .main { padding: 30px 24px; }
+  }
+
+  @media print {
+    html, body { box-sizing: border-box; width: 210mm !important; min-height: 297mm; margin: 0 !important; padding: 0 !important; overflow: visible !important; }
+    body { background: #fff !important; }
+    .no-print { display: none !important; }
+    .container-fluid.py-3 { box-sizing: border-box; width: 210mm !important; max-width: none !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; }
+    .container-fluid.py-3 > .row { display: block !important; width: 100% !important; margin: 0 !important; }
+    .container-fluid.py-3 > .row > .preview-column { position: static !important; display: block !important; flex: 0 0 100% !important; width: 100% !important; max-width: none !important; max-height: none !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; }
+    .preview-scroll { padding: 0; overflow: visible; }
+    .doc { box-sizing: border-box; box-shadow: none; width: 100%; max-width: none; min-height: 0; padding: 14mm 15mm; margin: 0 !important; }
+    .doc[data-layout=bandeau] .hd { margin: -14mm -15mm 20px; padding: 14mm 15mm; }
+    .doc[data-layout=degrade] .hd { margin: -14mm -15mm 20px; padding: 14mm 15mm; }
+    .doc[data-layout=barre] { position: relative; box-sizing: border-box; width: 210mm; height: 297mm; min-height: 0; padding: 0; overflow: hidden; }
+    .doc[data-layout=barre] .wrap { position: absolute; top: 0; left: 0; display: flex; flex-direction: row; align-items: stretch; width: 794px; height: var(--print-content-height, auto); margin: 0; min-height: 0; transform: scale(var(--print-scale, 1)); transform-origin: top left; }
+    .doc[data-layout=barre] .side { box-sizing: border-box; width: 270px; height: calc(1122.5px / var(--print-scale, 1)); flex: 0 0 270px; overflow: visible; padding: 42px 25px 34px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .doc[data-layout=barre] .side-head { margin-bottom: 36px; }
+    .doc[data-layout=barre] .side .photo { width: 138px; height: 138px; }
+    .doc[data-layout=barre] .main { box-sizing: border-box; flex: 1 1 auto; min-width: 0; padding: 48px 39px 40px; }
+    .doc.imported.pdf { padding: 0 !important; }
+    .pdf-page { box-shadow: none; margin: 0; page-break-after: always; }
+    .pdf-page:last-child { page-break-after: auto; }
+    @page { size: A4; margin: 0; }
+  }
+</style>
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark no-print sticky-top">
+  <div class="container-fluid">
+    <span class="navbar-brand mb-0 h1">CV &amp; lettre de motivation</span>
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn btn-outline-light btn-sm" id="btn-demo" aria-label="Charger un exemple complet de CV et de lettre"><i class="bi bi-magic"></i> Exemple complet</button>
+      <button class="btn btn-outline-light btn-sm" id="btn-clear" aria-label="Effacer le formulaire"><i class="bi bi-eraser"></i> Effacer</button>
+      <button class="btn btn-outline-light btn-sm" id="btn-word" aria-label="Exporter en Word"><i class="bi bi-file-earmark-word"></i> Word</button>
+      <div class="print-help">
+        <button class="btn btn-primary btn-sm" id="btn-print" aria-label="Imprimer ou générer un PDF" aria-describedby="print-help-popover"><i class="bi bi-printer"></i> Imprimer / PDF</button>
+        <div class="print-help-popover" id="print-help-popover" role="tooltip">
+          <strong>Conseils d’impression</strong>
+          <div class="mt-1">Choisissez le papier A4, les marges « Aucune », l’échelle « Taille réelle » (100 %) et activez les arrière-plans. Pour éviter le liseré sur papier, l’imprimante doit proposer le mode sans bordure. Vous pouvez aussi enregistrer en PDF pour vérifier le rendu.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<noscript>
+  <div class="alert alert-danger m-3">JavaScript est nécessaire pour l'aperçu en direct.</div>
+</noscript>
+
+<div class="container-fluid py-3">
+  <div class="row g-4">
+
+    <!-- ===== Colonne de saisie ===== -->
+    <div class="col-lg-5 no-print" id="editor-column">
+
+      <div class="card shadow-sm mb-3">
+        <div class="card-body">
+          <div class="card-title-sm">Importer un CV existant</div>
+          <input type="file" class="form-control" id="s-import" accept=".pdf,.docx,.doc">
+          <div class="form-text">PDF, Word (.docx) ou .doc. Les champs du formulaire sont remplis, et la mise en page d'origine est affichée à droite.</div>
+          <div id="import-note" class="alert alert-info d-none small mt-2 mb-0" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-3">
+        <div class="card-body">
+          <div class="card-title-sm">Mise en forme</div>
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label" for="s-font">Police</label>
+              <select class="form-select" id="s-font" data-style="font">
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="Georgia, serif">Georgia</option>
+                <option value="'Times New Roman', serif">Times New Roman</option>
+                <option value="'Trebuchet MS', sans-serif">Trebuchet</option>
+                <option value="Verdana, sans-serif">Verdana</option>
+                <option value="Cambria, Georgia, serif">Cambria</option>
+                <option value="Garamond, 'Times New Roman', serif">Garamond</option>
+                <option value="'Palatino Linotype', Palatino, serif">Palatino</option>
+                <option value="'Courier New', monospace">Courier New</option>
+                <option value="Tahoma, sans-serif">Tahoma</option>
+                <option value="'Segoe UI', sans-serif">Segoe UI</option>
+                <option value="system-ui, sans-serif">Système</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label" for="s-color">Couleur</label>
+              <input type="color" class="form-control form-control-color" id="s-color" data-style="color" title="Couleur d'accent">
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="s-layout">Mise en page du CV</label>
+              <select class="form-select" id="s-layout" data-style="layout">
+                <option value="classique">Classique</option>
+                <option value="bandeau">Bandeau coloré</option>
+                <option value="barre">Barre latérale colorée</option>
+                <option value="minimal">Minimal</option>
+                <option value="editorial">Éditorial</option>
+                <option value="compact">Compact</option>
+                <option value="encadre">Encadré</option>
+                <option value="degrade">Dégradé</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="s-photo">Photo (CV)</label>
+              <div class="input-group">
+                <input type="file" class="form-control" id="s-photo" accept="image/*">
+                <button class="btn btn-outline-secondary" id="s-photo-clear" type="button">Retirer</button>
+              </div>
+              <div id="photo-crop-panel" class="d-none mt-3">
+                <div class="small fw-semibold mb-2">Recadrer la photo</div>
+                <canvas id="photo-crop-preview" width="220" height="220" class="photo-crop-preview"></canvas>
+                <label class="form-label small mt-2 mb-0" for="photo-zoom">Zoom</label>
+                <input type="range" class="form-range" id="photo-zoom" min="1" max="3" step="0.05" value="1">
+                <div class="row g-2">
+                  <div class="col-6">
+                    <label class="form-label small mb-0" for="photo-x">Horizontal</label>
+                    <input type="range" class="form-range" id="photo-x" min="0" max="100" value="50">
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label small mb-0" for="photo-y">Vertical</label>
+                    <input type="range" class="form-range" id="photo-y" min="0" max="100" value="50">
+                  </div>
+                </div>
+                <button class="btn btn-primary btn-sm" id="btn-photo-crop" type="button">Appliquer le recadrage</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ul class="nav nav-tabs mb-3" id="tabs">
+        <li class="nav-item"><button class="nav-link active" data-tab="cv" type="button">CV</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="lettre" type="button">Lettre de motivation</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="aide" type="button">Tutoriel &amp; FAQ</button></li>
+      </ul>
+
+      <!-- Formulaire CV -->
+      <div id="pane-cv">
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
+            <div class="card-title-sm">Démarrer avec un exemple de CV</div>
+            <div class="input-group">
+              <select id="cv-example" class="form-select" aria-label="Exemple de CV">
+                <option value="communication">Communication</option>
+                <option value="administratif">Assistant administratif</option>
+                <option value="vente">Vente</option>
+              </select>
+              <button class="btn btn-outline-primary" id="btn-load-cv-example" type="button">Charger</button>
+            </div>
+            <div class="form-text">Les champs du CV actuel seront remplacés par cet exemple modifiable.</div>
+            <a class="small" href="https://gemini.google.com/app" target="_blank" rel="noopener noreferrer">Besoin d’idées ? Ouvrir Gemini</a>
+            <details class="mt-2">
+              <summary class="small">Consigne Gemini pour créer ou améliorer un CV</summary>
+              <textarea class="form-control form-control-sm mt-2" id="gemini-cv-prompt" rows="8" readonly>Agis comme un conseiller expert en recrutement et en rédaction de CV en français. Aide-moi à créer ou améliorer mon CV pour le poste visé.
+
+Respecte ces règles :
+- Utilise uniquement les informations que je fournis. N’invente ni expérience, ni diplôme, ni compétence, ni résultat chiffré.
+- Si une information essentielle manque, pose-moi une question ou indique clairement un champ à compléter entre crochets.
+- Mets les expériences de la plus récente à la plus ancienne.
+- Rédige des formulations claires, concrètes et professionnelles, avec des verbes d’action et des résultats seulement s’ils sont fournis.
+- Adapte les mots-clés à l’offre sans exagérer ni ajouter de compétences non confirmées.
+- Propose un CV lisible, sobre, compatible avec les logiciels de recrutement (ATS), idéalement sur une page si le contenu le permet.
+- Présente le résultat par rubriques (titre, profil, expériences, formations, compétences, langues et autres informations). Ne mets aucun conseil ou commentaire dans le texte final du CV.
+
+Avant de commencer, demande-moi le poste visé et l’offre d’emploi si je ne les ai pas fournis. Je collerai ensuite mes informations anonymisées. Ne demande pas mon adresse complète, téléphone ou email.
+
+Quand les informations sont suffisantes, réponds avec un objet JSON valide uniquement, sans bloc Markdown ni texte avant ou après, en respectant exactement ce format. Pour les données personnelles non fournies, laisse une chaîne vide. N’ajoute pas de propriétés :
+{"prenom":"","nom":"","titre":"","email":"","tel":"","adresse":"","ville":"","web":"","profil":"","exps":[{"poste":"","ent":"","dates":"","desc":""}],"formations":[{"diplome":"","ecole":"","annee":""}],"competences":"","langues":"","permis":"","centresInteret":""}</textarea>
+              <button class="btn btn-outline-secondary btn-sm mt-2" id="btn-copy-cv-prompt" type="button">Copier la consigne</button>
+              <span class="small ms-2" id="cv-prompt-status" role="status" aria-live="polite"></span>
+              <div class="form-text mt-2">Demande ensuite une réponse en JSON uniquement, puis colle-la dans « Importer la réponse Gemini » ci-dessous.</div>
+            </details>
+            <details class="mt-2">
+              <summary class="small">Importer la réponse Gemini dans le CV</summary>
+              <label class="form-label small mt-2" for="gemini-cv-result">Colle ici le JSON généré par Gemini</label>
+              <textarea class="form-control form-control-sm" id="gemini-cv-result" rows="5" placeholder='{"prenom":"...","nom":"...","exps":[],"formations":[]}'></textarea>
+              <button class="btn btn-primary btn-sm mt-2" id="btn-import-gemini-cv" type="button">Intégrer dans le CV</button>
+              <div class="small mt-2" id="gemini-cv-import-status" role="status" aria-live="polite"></div>
+              <div class="form-text">Cela remplace le contenu du CV (la photo actuelle est conservée). Les autres réglages restent inchangés.</div>
+            </details>
+            <div class="form-text">Ne transmettez pas de données personnelles ou confidentielles à un service externe.</div>
+          </div>
+        </div>
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
+            <div class="card-title-sm">Identité et contact</div>
+            <div class="row g-2">
+              <div class="col-md-6"><label class="form-label" for="c-prenom">Prénom</label><input class="form-control" id="c-prenom" data-path="cv.prenom"></div>
+              <div class="col-md-6"><label class="form-label" for="c-nom">Nom</label><input class="form-control" id="c-nom" data-path="cv.nom"></div>
+              <div class="col-12"><label class="form-label" for="c-titre">Titre professionnel</label><input class="form-control" id="c-titre" data-path="cv.titre" placeholder="Chargée de communication"></div>
+              <div class="col-md-6"><label class="form-label" for="c-email">Email</label><input type="email" class="form-control" id="c-email" data-path="cv.email"></div>
+              <div class="col-md-6"><label class="form-label" for="c-tel">Téléphone</label><input class="form-control" id="c-tel" data-path="cv.tel"></div>
+              <div class="col-12"><label class="form-label" for="c-adresse">Adresse</label><input class="form-control" id="c-adresse" data-path="cv.adresse" placeholder="N° et nom de rue, code postal"></div>
+              <div class="col-md-6"><label class="form-label" for="c-ville">Ville</label><input class="form-control" id="c-ville" data-path="cv.ville"></div>
+              <div class="col-md-6"><label class="form-label" for="c-web">LinkedIn / portfolio</label><input class="form-control" id="c-web" data-path="cv.web"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
+            <div class="card-title-sm">Profil</div>
+            <textarea class="form-control" rows="3" id="c-profil" data-path="cv.profil" aria-label="Profil"></textarea>
+          </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
+            <div class="card-title-sm">Expériences professionnelles</div>
+            <div id="exps"></div>
+            <button class="btn btn-outline-primary btn-sm" data-add="exps" type="button"><i class="bi bi-plus-lg"></i> Ajouter une expérience</button>
+          </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
+            <div class="card-title-sm">Formations et diplômes</div>
+            <div id="formations"></div>
+            <button class="btn btn-outline-primary btn-sm" data-add="formations" type="button"><i class="bi bi-plus-lg"></i> Ajouter une formation</button>
+          </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
+            <div class="card-title-sm">Compétences, langues et autres</div>
+            <label class="form-label" for="c-comp">Compétences (séparées par des virgules)</label>
+            <input class="form-control mb-2" id="c-comp" data-path="cv.competences" placeholder="Photoshop, InDesign, SEO">
+            <label class="form-label" for="c-langues">Langues</label>
+            <input class="form-control mb-2" id="c-langues" data-path="cv.langues" placeholder="Anglais (C1), Espagnol (B1)">
+            <label class="form-label" for="c-permis">Permis de conduire</label>
+            <input class="form-control" id="c-permis" data-path="cv.permis" placeholder="Permis B">
+            <label class="form-label mt-2" for="c-interets">Centres d'intérêt</label>
+            <input class="form-control" id="c-interets" data-path="cv.centresInteret" placeholder="Lecture, sport, musique">
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulaire lettre -->
+      <div id="pane-lettre" class="d-none">
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
+            <div class="card-title-sm">Démarrer avec un exemple de lettre</div>
+            <div class="input-group">
+              <select id="letter-example" class="form-select" aria-label="Exemple de lettre de motivation">
+                <option value="communication">Chargée de communication</option>
+                <option value="administratif">Assistant administratif</option>
+                <option value="vente">Conseiller de vente</option>
+              </select>
+              <button class="btn btn-outline-primary" id="btn-load-letter-example" type="button">Charger</button>
+            </div>
+            <div class="form-text">Les champs de la lettre actuelle seront remplacés par cet exemple modifiable.</div>
+            <a class="small" href="https://gemini.google.com/app" target="_blank" rel="noopener noreferrer">Besoin d’aide à la rédaction ? Ouvrir Gemini</a>
+            <details class="mt-2">
+              <summary class="small">Consigne Gemini pour rédiger une lettre</summary>
+              <textarea class="form-control form-control-sm mt-2" id="gemini-letter-prompt" rows="8" readonly>Agis comme un conseiller en recrutement et rédige avec moi une lettre de motivation personnalisée, en français, pour le poste et l’entreprise que je vais indiquer.
+
+Respecte ces règles :
+- N’invente aucune expérience, compétence, réalisation, raison de candidature ou information sur l’entreprise.
+- Appuie chaque affirmation sur les éléments que je fournis. Si un élément manque, pose une question ou laisse un champ à compléter entre crochets.
+- Adopte un ton professionnel, naturel, direct et personnel, sans phrases toutes faites ni superlatifs.
+- Fais le lien entre les besoins de l’offre, mes compétences réelles et ma motivation pour l’entreprise.
+- Rédige une lettre concise d’environ 250 à 350 mots, structurée en paragraphes, avec un objet et une formule de politesse appropriée.
+- Donne uniquement la lettre finalisée, sans explication autour.
+
+Demande-moi l’intitulé du poste, l’offre d’emploi et quelques informations professionnelles pertinentes si elles manquent. Je fournirai des données anonymisées : ne demande pas mon adresse complète, téléphone ou email.
+
+Quand les informations sont suffisantes, réponds avec un objet JSON valide uniquement, sans bloc Markdown ni texte avant ou après, en respectant exactement ce format. Pour les données personnelles non fournies, laisse une chaîne vide. N’ajoute pas de propriétés :
+{"expNom":"","expAdresse":"","expEmail":"","expTel":"","destNom":"","destAdresse":"","lieu":"","date":"","objet":"","p1":"","p2":"","p3":"","p4":"","formule":"","signature":""}</textarea>
+              <button class="btn btn-outline-secondary btn-sm mt-2" id="btn-copy-letter-prompt" type="button">Copier la consigne</button>
+              <span class="small ms-2" id="letter-prompt-status" role="status" aria-live="polite"></span>
+              <div class="form-text mt-2">Demande ensuite une réponse en JSON uniquement, puis colle-la dans « Importer la réponse Gemini » ci-dessous.</div>
+            </details>
+            <details class="mt-2">
+              <summary class="small">Importer la réponse Gemini dans la lettre</summary>
+              <label class="form-label small mt-2" for="gemini-letter-result">Colle ici le JSON généré par Gemini</label>
+              <textarea class="form-control form-control-sm" id="gemini-letter-result" rows="5" placeholder='{"objet":"...","p1":"...","p2":"...","signature":"..."}'></textarea>
+              <button class="btn btn-primary btn-sm mt-2" id="btn-import-gemini-letter" type="button">Intégrer dans la lettre</button>
+              <div class="small mt-2" id="gemini-letter-import-status" role="status" aria-live="polite"></div>
+              <div class="form-text">Cela remplace le contenu actuel de la lettre de motivation.</div>
+            </details>
+            <div class="form-text">Ne transmettez pas de données personnelles ou confidentielles à un service externe.</div>
+          </div>
+        </div>
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
+            <div class="card-title-sm">Expéditeur</div>
+            <div class="row g-2">
+              <div class="col-12"><input class="form-control" placeholder="Prénom et nom" data-path="lettre.expNom" aria-label="Nom de l'expéditeur"></div>
+              <div class="col-12"><input class="form-control" placeholder="Adresse" data-path="lettre.expAdresse" aria-label="Adresse de l'expéditeur"></div>
+              <div class="col-md-6"><input class="form-control" placeholder="Email" data-path="lettre.expEmail" aria-label="Email de l'expéditeur"></div>
+              <div class="col-md-6"><input class="form-control" placeholder="Téléphone" data-path="lettre.expTel" aria-label="Téléphone de l'expéditeur"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
+            <div class="card-title-sm">Destinataire</div>
+            <div class="row g-2">
+              <div class="col-12"><input class="form-control" placeholder="Entreprise, nom du recruteur" data-path="lettre.destNom" aria-label="Nom du destinataire"></div>
+              <div class="col-12"><input class="form-control" placeholder="Adresse de l'entreprise" data-path="lettre.destAdresse" aria-label="Adresse du destinataire"></div>
+              <div class="col-md-6"><input class="form-control" placeholder="Lieu (ex. Nantes)" data-path="lettre.lieu" aria-label="Lieu"></div>
+              <div class="col-md-6"><input class="form-control" placeholder="Date" data-path="lettre.date" aria-label="Date"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
+            <div class="card-title-sm">Objet et corps de la lettre</div>
+            <input class="form-control mb-2" placeholder="Candidature au poste de..." data-path="lettre.objet" aria-label="Objet">
+            <label class="form-label small text-muted" for="l-p1">Introduction : pourquoi ce poste</label>
+            <textarea class="form-control mb-2" rows="3" id="l-p1" data-path="lettre.p1"></textarea>
+            <label class="form-label small text-muted" for="l-p2">Parcours : ce que vous avez fait</label>
+            <textarea class="form-control mb-2" rows="3" id="l-p2" data-path="lettre.p2"></textarea>
+            <label class="form-label small text-muted" for="l-p3">Apport : ce que vous apportez à l'entreprise</label>
+            <textarea class="form-control mb-2" rows="3" id="l-p3" data-path="lettre.p3"></textarea>
+            <label class="form-label small text-muted" for="l-p4">Conclusion : appel à l'action</label>
+            <textarea class="form-control mb-2" rows="2" id="l-p4" data-path="lettre.p4"></textarea>
+            <input class="form-control mb-2" placeholder="Formule de politesse" data-path="lettre.formule" aria-label="Formule de politesse">
+            <input class="form-control" placeholder="Signature (prénom et nom)" data-path="lettre.signature" aria-label="Signature">
+          </div>
+        </div>
+      </div>
+      <div id="pane-aide" class="d-none">
+        <div class="mb-4">
+          <h2 class="h4 mb-1">Bienvenue dans votre assistant CV &amp; lettre</h2>
+          <p class="text-muted mb-0">Suivez ces étapes pour créer un document clair, le personnaliser et l’imprimer.</p>
+        </div>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6 col-xl-3"><div class="card shadow-sm help-step"><div class="card-body">
+            <span class="badge rounded-pill text-bg-primary mb-2">1</span>
+            <h3 class="h6">Choisissez un point de départ</h3>
+            <p class="small mb-0">Chargez un exemple de CV ou de lettre, ou importez un CV existant en PDF ou Word (.docx).</p>
+          </div></div></div>
+          <div class="col-md-6 col-xl-3"><div class="card shadow-sm help-step"><div class="card-body">
+            <span class="badge rounded-pill text-bg-primary mb-2">2</span>
+            <h3 class="h6">Complétez les rubriques</h3>
+            <p class="small mb-0">Renseignez vos coordonnées et votre parcours. Les expériences les plus récentes apparaissent en premier.</p>
+          </div></div></div>
+          <div class="col-md-6 col-xl-3"><div class="card shadow-sm help-step"><div class="card-body">
+            <span class="badge rounded-pill text-bg-primary mb-2">3</span>
+            <h3 class="h6">Vérifiez l’aperçu</h3>
+            <p class="small mb-0">L’aperçu se met à jour pendant la saisie. Choisissez une police, une couleur et une mise en page, puis relisez chaque détail.</p>
+          </div></div></div>
+          <div class="col-md-6 col-xl-3"><div class="card shadow-sm help-step"><div class="card-body">
+            <span class="badge rounded-pill text-bg-primary mb-2">4</span>
+            <h3 class="h6">Imprimez ou exportez</h3>
+            <p class="small mb-0">Utilisez « Imprimer / PDF » pour imprimer ou enregistrer un PDF. Survolez ce bouton pour afficher les réglages conseillés.</p>
+          </div></div></div>
+        </div>
+        <h3 class="h5 mb-3">Questions fréquentes</h3>
+        <div class="accordion" id="help-faq">
+          <div class="accordion-item">
+            <h4 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq-preview" aria-expanded="true" aria-controls="faq-preview">Comment voir les changements en direct ?</button></h4>
+            <div id="faq-preview" class="accordion-collapse collapse show" data-bs-parent="#help-faq"><div class="accordion-body">L’aperçu à droite se met à jour dès que vous modifiez un champ. Sur un petit écran, faites défiler la page pour le retrouver sous le formulaire.</div></div>
+          </div>
+          <div class="accordion-item">
+            <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-import" aria-expanded="false" aria-controls="faq-import">Puis-je importer mon ancien CV ?</button></h4>
+            <div id="faq-import" class="accordion-collapse collapse" data-bs-parent="#help-faq"><div class="accordion-body">Oui. Choisissez un fichier PDF ou Word (.docx). Un PDF est affiché avec sa mise en page d’origine. Modifier les champs du formulaire convertit ensuite le CV vers un modèle de l’application.</div></div>
+          </div>
+          <div class="accordion-item">
+            <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-gemini" aria-expanded="false" aria-controls="faq-gemini">Comment utiliser Gemini avec l’application ?</button></h4>
+            <div id="faq-gemini" class="accordion-collapse collapse" data-bs-parent="#help-faq"><div class="accordion-body">Dans l’onglet CV ou Lettre, copiez la consigne Gemini, collez-la dans Gemini, puis demandez une réponse au format JSON uniquement. Copiez cette réponse, revenez dans l’application et collez-la dans « Importer la réponse Gemini ». Relisez le contenu. N’envoyez pas d’informations personnelles ou confidentielles à un service externe.</div></div>
+          </div>
+          <div class="accordion-item">
+            <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-one-page" aria-expanded="false" aria-controls="faq-one-page">Pourquoi mon CV dépasse-t-il une page ?</button></h4>
+            <div id="faq-one-page" class="accordion-collapse collapse" data-bs-parent="#help-faq"><div class="accordion-body">Réduisez les descriptions longues, gardez les expériences et compétences les plus pertinentes, ou choisissez une mise en page compacte. Relisez le document après toute modification.</div></div>
+          </div>
+          <div class="accordion-item">
+            <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-print" aria-expanded="false" aria-controls="faq-print">Comment éviter les marges à l’impression ?</button></h4>
+            <div id="faq-print" class="accordion-collapse collapse" data-bs-parent="#help-faq"><div class="accordion-body">Dans les réglages d’impression, choisissez A4, « Aucune » pour les marges, une échelle de 100 % et l’impression des arrière-plans. Les marges physiques dépendent aussi de l’imprimante; un bord à bord sur papier exige un mode sans bordure.</div></div>
+          </div>
+          <div class="accordion-item">
+            <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-save" aria-expanded="false" aria-controls="faq-save">Mes informations sont-elles enregistrées ?</button></h4>
+            <div id="faq-save" class="accordion-collapse collapse" data-bs-parent="#help-faq"><div class="accordion-body">L’application enregistre le contenu dans le stockage local du navigateur sur cet appareil. Effacer les données du navigateur peut supprimer cette sauvegarde. Exportez régulièrement une copie si vous souhaitez la conserver.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Aperçu ===== -->
+    <div class="col-lg-7 preview-column">
+      <div id="warning" class="alert alert-warning no-print d-none" role="alert" aria-live="polite"></div>
+      <div id="pdf-tools" class="alert alert-info no-print d-none py-2" role="region" aria-label="Outils d'édition du PDF">
+        <button class="btn btn-primary btn-sm" id="btn-add-pdf-text" type="button"><i class="bi bi-plus-lg"></i> Ajouter du texte</button>
+        <span id="pdf-tools-hint" class="small ms-2">Le PDF reste fixe. Cliquez à l’endroit souhaité pour placer un bloc, puis vous pouvez le déplacer en le redimensionnant.</span>
+      </div>
+      <div class="preview-scroll">
+        <div class="doc" id="doc-cv" data-layout="classique"></div>
+        <div class="doc d-none" id="doc-lettre"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+  const KEY = "cv-lettre-app-v1";
+  let importedEl = null;   // mise en page importée affichée dans l'aperçu (null = modèle)
+  let pdfAddMode = false;
+  let photoSource = null;
+  let photoImage = null;
+  let lastDocumentTab = "cv";
+
+  const emptyCV = () => ({
+    prenom: "", nom: "", titre: "", email: "", tel: "", adresse: "", ville: "", web: "", profil: "",
+    exps: [], formations: [], competences: "", langues: "", permis: "", centresInteret: "", photo: ""
+  });
+  const emptyLettre = () => ({
+    expNom: "", expAdresse: "", expEmail: "", expTel: "", destNom: "", destAdresse: "",
+    lieu: "", date: "", objet: "", p1: "", p2: "", p3: "", p4: "", formule: "", signature: ""
+  });
+
+  let state = { cv: emptyCV(), lettre: emptyLettre(), style: { font: "Arial, sans-serif", color: "#1f3a5f", layout: "classique" } };
+
+  // ---------- Utilitaires ----------
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const lines = s => String(s || "").split("\n").map(x => x.trim()).filter(Boolean);
+  const getPath = p => p.split(".").reduce((o, k) => o?.[k], state);
+  function setPath(p, v) {
+    const k = p.split(".");
+    let o = state;
+    for (let i = 0; i < k.length - 1; i++) o = o[k[i]];
+    o[k[k.length - 1]] = v;
+  }
+  function tintOf(hex, amount = 0.12) {
+    const n = parseInt(hex.slice(1), 16);
+    const mix = c => Math.round(c + (255 - c) * (1 - amount));
+    return `rgb(${mix(n >> 16)}, ${mix((n >> 8) & 255)}, ${mix(n & 255)})`;
+  }
+  function newestFirstExperiences(items) {
+    return items.map((item, index) => {
+      const dateText = String(item.dates || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      const monthNumbers = {
+        janv: 1, janvier: 1, fevr: 2, fevrier: 2, mars: 3, avr: 4, avril: 4,
+        mai: 5, juin: 6, juil: 7, juillet: 7, aout: 8, sept: 9, septembre: 9,
+        oct: 10, octobre: 10, nov: 11, novembre: 11, dec: 12, decembre: 12
+      };
+      const monthPattern = "(janv(?:ier)?|fevr(?:ier)?|mars|avr(?:il)?|mai|juin|juil(?:let)?|aout|sept(?:embre)?|oct(?:obre)?|nov(?:embre)?|dec(?:embre)?)";
+      const yearPattern = /\b(?:19|20)\d{2}\b/g;
+      let match;
+      let cursor = 0;
+      let latest = 0;
+      while ((match = yearPattern.exec(dateText))) {
+        const year = Number(match[0]);
+        const precedingText = dateText.slice(cursor, match.index);
+        const monthMatch = precedingText.match(new RegExp(`\\b${monthPattern}\\.?(?=\\s*$)`, "i"));
+        const monthName = monthMatch?.[1]?.replace(/\.$/, "");
+        const month = monthName ? monthNumbers[monthName] || 12 : 12;
+        latest = Math.max(latest, year * 12 + month);
+        cursor = yearPattern.lastIndex;
+      }
+      return { item, index, date: latest };
+    }).sort((a, b) => b.date - a.date || a.index - b.index);
+  }
+
+  // ---------- Sauvegarde locale ----------
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* stockage plein : on continue sans sauvegarder */ }
+  }
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem(KEY) || "null");
+      if (s) {
+        const cv = { ...emptyCV(), ...s.cv };
+        if (!s.cv || !Object.prototype.hasOwnProperty.call(s.cv, "centresInteret")) {
+          const otherItems = String(cv.permis || "").split(",").map(item => item.trim()).filter(Boolean);
+          if (otherItems.length > 1 && /^permis\b/i.test(otherItems[0]) && !otherItems.slice(1).some(item => /^permis\b/i.test(item))) {
+            cv.permis = otherItems.shift();
+            cv.centresInteret = otherItems.join(", ");
+          }
+        }
+        state = { cv, lettre: { ...emptyLettre(), ...s.lettre }, style: { ...state.style, ...s.style } };
+      }
+    } catch (e) { /* données illisibles : on repart de zéro */ }
+  }
+
+  // ---------- Formulaires ----------
+  function fillForms() {
+    releaseImport();
+    document.querySelectorAll("[data-path]").forEach(el => { el.value = getPath(el.dataset.path) ?? ""; });
+    document.querySelectorAll("[data-style]").forEach(el => { el.value = state.style[el.dataset.style]; });
+    renderLists();
+  }
+
+  function renderLists() {
+    $("exps").innerHTML = newestFirstExperiences(state.cv.exps).map(({ item: x, index: i }) => `
+      <div class="border rounded p-2 mb-2 bg-white">
+        <div class="row g-2">
+          <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Poste" aria-label="Poste" data-list="exps" data-idx="${i}" data-key="poste" value="${esc(x.poste)}"></div>
+          <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Entreprise" aria-label="Entreprise" data-list="exps" data-idx="${i}" data-key="ent" value="${esc(x.ent)}"></div>
+          <div class="col-12"><input class="form-control form-control-sm" placeholder="Dates (ex. 2021 – 2024)" aria-label="Dates" data-list="exps" data-idx="${i}" data-key="dates" value="${esc(x.dates)}"></div>
+          <div class="col-12"><textarea class="form-control form-control-sm" rows="2" placeholder="Réalisations, une par ligne" aria-label="Réalisations" data-list="exps" data-idx="${i}" data-key="desc">${esc(x.desc)}</textarea></div>
+        </div>
+        <button class="btn btn-sm btn-outline-danger mt-2" data-del="exps" data-idx="${i}" type="button"><i class="bi bi-trash"></i> Supprimer</button>
+      </div>`).join("");
+
+    $("formations").innerHTML = state.cv.formations.map((x, i) => `
+      <div class="border rounded p-2 mb-2 bg-white">
+        <div class="row g-2">
+          <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Diplôme" aria-label="Diplôme" data-list="formations" data-idx="${i}" data-key="diplome" value="${esc(x.diplome)}"></div>
+          <div class="col-md-4"><input class="form-control form-control-sm" placeholder="École" aria-label="École" data-list="formations" data-idx="${i}" data-key="ecole" value="${esc(x.ecole)}"></div>
+          <div class="col-md-2"><input class="form-control form-control-sm" placeholder="Année" aria-label="Année" data-list="formations" data-idx="${i}" data-key="annee" value="${esc(x.annee)}"></div>
+        </div>
+        <button class="btn btn-sm btn-outline-danger mt-2" data-del="formations" data-idx="${i}" type="button"><i class="bi bi-trash"></i> Supprimer</button>
+      </div>`).join("");
+  }
+
+  // ---------- Rendu des documents ----------
+  function cvHtml() {
+    const c = state.cv;
+    const hasContent = [c.prenom, c.nom, c.titre, c.email, c.tel, c.adresse, c.ville, c.web, c.profil, c.competences, c.langues, c.permis, c.centresInteret].some(Boolean)
+      || c.exps.some(x => x.poste || x.ent || x.dates || x.desc)
+      || c.formations.some(x => x.diplome || x.ecole || x.annee);
+
+    if (!hasContent) {
+      return `<div class="empty-state">Complétez vos informations pour générer un CV professionnel prêt à imprimer.</div>`;
+    }
+
+    const name = `${esc(c.prenom)} ${esc(c.nom)}`.trim() || "Votre nom";
+    const location = [c.adresse, c.ville].filter(Boolean).map(esc).join("<br>");
+    const contact = [...[c.email, c.tel].filter(Boolean).map(esc), ...(location ? [location] : []), ...(c.web ? [esc(c.web)] : [])].join("<br>");
+    const contactRows = [
+      [c.email, "bi-envelope"],
+      [c.tel, "bi-telephone"],
+      [[c.adresse, c.ville].filter(Boolean).length ? [c.adresse, c.ville].filter(Boolean).map(esc).join("<br>") : "", "bi-geo-alt"],
+      [c.web, "bi-link-45deg"],
+    ].filter(([value]) => value).map(([value, icon]) =>
+      `<div class="contact-row"><span class="contact-icon"><i class="bi ${icon}"></i></span><span>${icon === "bi-geo-alt" ? value : esc(value)}</span></div>`
+    ).join("");
+    const photo = c.photo ? `<img class="photo" src="${c.photo}" alt="Photo">` : "";
+    const sec = (t, body) => body ? `<section class="sec"><h3>${t}</h3>${body}</section>` : "";
+
+    const exps = newestFirstExperiences(c.exps).map(({ item: x }) => x).filter(x => x.poste || x.ent || x.dates || x.desc).map(x => {
+      const items = lines(x.desc);
+      return `<div class="item">
+        <div class="ih"><b>${esc(x.poste)}</b><span class="meta">${esc(x.dates)}</span></div>
+        ${x.ent ? `<div class="org">${esc(x.ent)}</div>` : ""}
+        ${items.length ? `<ul class="desc">${items.map(l => `<li>${esc(l)}</li>`).join("")}</ul>` : ""}
+      </div>`;
+    }).join("");
+
+    const formations = c.formations.filter(x => x.diplome || x.ecole || x.annee).map(x => `
+      <div class="item">
+        <div class="ih"><b>${esc(x.diplome)}</b><span class="meta">${esc(x.annee)}</span></div>
+        <div class="org">${esc(x.ecole)}</div>
+      </div>`).join("");
+
+    const skills = c.competences.split(",").map(s => s.trim()).filter(Boolean).map(s => `<span class="tag">${esc(s)}</span>`).join("");
+    const languages = c.langues ? `<div class="item">${esc(c.langues)}</div>` : "";
+    const permit = c.permis ? `<div class="item">${esc(c.permis)}</div>` : "";
+    const interests = c.centresInteret ? `<div class="item">${esc(c.centresInteret)}</div>` : "";
+    const profil = c.profil ? `<p class="profil">${esc(c.profil)}</p>` : "";
+
+    if (state.style.layout === "barre") {
+      return `<div class="wrap">
+        <aside class="side">
+          <div class="side-head">
+            ${photo}
+            <div class="name">${name}</div>
+            ${c.titre ? `<div class="titre">${esc(c.titre)}</div>` : ""}
+          </div>
+          ${sec("Contact", `<div class="contact-list">${contactRows}</div>`)}
+          ${sec("Compétences", skills)}
+          ${sec("Langues", languages)}
+          ${sec("Permis", permit)}
+          ${sec("Centres d’intérêt", interests)}
+        </aside>
+        <main class="main">
+          ${sec("Profil", profil)}
+          ${sec("Expériences", exps)}
+          ${sec("Formation", formations)}
+        </main>
+      </div>`;
+    }
+
+    return `
+      <header class="hd">
+        ${photo}
+        <div>
+          <div class="name">${name}</div>
+          <div class="titre">${esc(c.titre)}</div>
+          <div class="contact">${contact}</div>
+        </div>
+      </header>
+      ${sec("Profil", profil)}
+      ${sec("Expériences", exps)}
+      ${sec("Formation", formations)}
+      ${sec("Compétences", skills ? `<div>${skills}</div>` : "")}
+      ${sec("Langues", languages)}
+      ${sec("Permis", permit)}
+      ${sec("Centres d’intérêt", interests)}`;
+  }
+
+  function letterHtml() {
+    const l = state.lettre;
+    const hasContent = [l.expNom, l.expAdresse, l.expEmail, l.expTel, l.destNom, l.destAdresse, l.lieu, l.date, l.objet, l.p1, l.p2, l.p3, l.p4, l.formule, l.signature].some(Boolean);
+
+    if (!hasContent) {
+      return `<div class="empty-state">Renseignez l'expéditeur, le destinataire et le corps de la lettre pour obtenir un modèle prêt à envoyer.</div>`;
+    }
+
+    const exp = [l.expNom, l.expAdresse, [l.expEmail, l.expTel].filter(Boolean).join(" · ")].filter(Boolean).map(esc).join("<br>");
+    const dest = [l.destNom, l.destAdresse].filter(Boolean).map(esc).join("<br>");
+    const paras = [l.p1, l.p2, l.p3, l.p4].filter(Boolean).map(p => `<p>${esc(p)}</p>`).join("");
+    return `<div class="lt">
+      <div class="exp">${exp}</div>
+      <div class="dest">${dest}</div>
+      ${[l.lieu, l.date].filter(Boolean).length ? `<p>${esc([l.lieu, l.date].filter(Boolean).join(", "))}</p>` : ""}
+      ${l.objet ? `<p class="objet"><b>Objet :</b> ${esc(l.objet)}</p>` : ""}
+      ${paras}
+      ${l.formule ? `<p>${esc(l.formule)}</p>` : ""}
+      ${l.signature ? `<p>${esc(l.signature)}</p>` : ""}
+    </div>`;
+  }
+
+  function applyStyle() {
+    const accent = state.style.color;
+    [$("doc-cv"), $("doc-lettre")].forEach(d => {
+      d.style.setProperty("--accent", accent);
+      d.style.setProperty("--tint", tintOf(accent, 0.12));
+      d.style.fontFamily = state.style.font;
+    });
+    $("doc-cv").dataset.layout = state.style.layout;
+  }
+
+  function checkOverflow() {
+    if ($("pane-aide").classList.contains("d-none") === false) {
+      $("warning").classList.add("d-none");
+      return;
+    }
+    const visible = $("doc-cv").classList.contains("d-none") ? $("doc-lettre") : $("doc-cv");
+    const warn = $("warning");
+    const tooLong = !importedEl && visible.offsetHeight > 1125;   // une mise en page importée a sa propre pagination
+    if (tooLong) {
+      warn.textContent = visible.id === "doc-cv"
+        ? "Votre CV dépasse une page A4. Pensez à le raccourcir, ou à réduire le nombre de lignes par expérience."
+        : "Votre lettre dépasse une page A4. Pensez à la raccourcir.";
+      warn.classList.remove("d-none");
+    } else {
+      warn.classList.add("d-none");
+    }
+  }
+
+  function update() {
+    save();
+    applyStyle();
+    if (!importedEl) $("doc-cv").innerHTML = cvHtml();
+    $("doc-lettre").innerHTML = letterHtml();
+    checkOverflow();
+  }
+
+  // ---------- Onglets ----------
+  function setTab(tab) {
+    if (tab === "cv" || tab === "lettre") lastDocumentTab = tab;
+    document.querySelectorAll("#tabs .nav-link").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+    document.querySelector(".row.g-4").classList.toggle("help-mode", tab === "aide");
+    $("pane-cv").classList.toggle("d-none", tab !== "cv");
+    $("pane-lettre").classList.toggle("d-none", tab !== "lettre");
+    $("pane-aide").classList.toggle("d-none", tab !== "aide");
+    $("doc-cv").classList.toggle("d-none", tab !== "cv");
+    $("doc-lettre").classList.toggle("d-none", tab !== "lettre");
+    checkOverflow();
+  }
+
+  // ---------- Événements ----------
+  document.addEventListener("input", e => {
+    const t = e.target;
+    // Modifier le CV dans le formulaire remplace la mise en page importée par le modèle
+    if (importedEl && (t.dataset.list || (t.dataset.path || "").startsWith("cv."))) releaseImport();
+    if (t.dataset.list) {
+      state.cv[t.dataset.list][+t.dataset.idx][t.dataset.key] = t.value;
+      update();
+    } else if (t.dataset.path) {
+      setPath(t.dataset.path, t.value);
+      update();
+    } else if (t.dataset.style) {
+      state.style[t.dataset.style] = t.value;
+      update();
+    }
+  });
+  document.addEventListener("change", e => {
+    if (e.target.dataset.style) { state.style[e.target.dataset.style] = e.target.value; update(); }
+  });
+
+  document.addEventListener("click", e => {
+    const tab = e.target.closest("[data-tab]");
+    if (tab) return setTab(tab.dataset.tab);
+
+    const add = e.target.closest("[data-add]");
+    if (add) {
+      const kind = add.dataset.add;
+      state.cv[kind].push(kind === "exps"
+        ? { poste: "", ent: "", dates: "", desc: "" }
+        : { diplome: "", ecole: "", annee: "" });
+      renderLists(); update();
+      return;
+    }
+
+    const del = e.target.closest("[data-del]");
+    if (del) {
+      state.cv[del.dataset.del].splice(+del.dataset.idx, 1);
+      renderLists(); update();
+    }
+  });
+
+  function drawPhotoCrop() {
+    if (!photoImage) return;
+    const canvas = $("photo-crop-preview");
+    const ctx = canvas.getContext("2d");
+    const width = photoImage.naturalWidth;
+    const height = photoImage.naturalHeight;
+    const zoom = Number($("photo-zoom").value);
+    const side = Math.min(width, height) / zoom;
+    const centerX = Number($("photo-x").value) / 100 * width;
+    const centerY = Number($("photo-y").value) / 100 * height;
+    const sx = Math.max(0, Math.min(width - side, centerX - side / 2));
+    const sy = Math.max(0, Math.min(height - side, centerY - side / 2));
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(photoImage, sx, sy, side, side, 0, 0, canvas.width, canvas.height);
+  }
+
+  $("s-photo").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      photoSource = ev.target.result;
+      photoImage = new Image();
+      photoImage.onload = () => {
+        $("photo-zoom").value = "1";
+        $("photo-x").value = "50";
+        $("photo-y").value = "50";
+        $("photo-crop-panel").classList.remove("d-none");
+        drawPhotoCrop();
+      };
+      photoImage.onerror = () => {
+        photoSource = null;
+        photoImage = null;
+        alert("Cette image ne peut pas être ouverte. Choisissez un autre fichier image.");
+      };
+      photoImage.src = photoSource;
+    };
+    reader.onerror = () => alert("Impossible de lire ce fichier image.");
+    reader.readAsDataURL(file);
+  });
+  ["photo-zoom", "photo-x", "photo-y"].forEach(id => $(id).addEventListener("input", drawPhotoCrop));
+  $("btn-photo-crop").addEventListener("click", () => {
+    if (!photoImage) return;
+    const width = photoImage.naturalWidth;
+    const height = photoImage.naturalHeight;
+    const zoom = Number($("photo-zoom").value);
+    const side = Math.min(width, height) / zoom;
+    const centerX = Number($("photo-x").value) / 100 * width;
+    const centerY = Number($("photo-y").value) / 100 * height;
+    const sx = Math.max(0, Math.min(width - side, centerX - side / 2));
+    const sy = Math.max(0, Math.min(height - side, centerY - side / 2));
+    const canvas = document.createElement("canvas");
+    canvas.width = 600;
+    canvas.height = 600;
+    canvas.getContext("2d").drawImage(photoImage, sx, sy, side, side, 0, 0, 600, 600);
+    state.cv.photo = canvas.toDataURL("image/jpeg", .9);
+    photoSource = null;
+    photoImage = null;
+    $("photo-crop-panel").classList.add("d-none");
+    update();
+  });
+  $("s-photo-clear").addEventListener("click", () => {
+    state.cv.photo = "";
+    photoSource = null;
+    photoImage = null;
+    $("s-photo").value = "";
+    $("photo-crop-panel").classList.add("d-none");
+    update();
+  });
+
+  $("btn-demo").addEventListener("click", () => {
+    state = {
+      cv: {
+        prenom: "Marie", nom: "Dupont", titre: "Chargée de communication",
+        email: "marie.dupont@exemple.fr", tel: "06 12 34 56 78", ville: "Nantes",
+        web: "linkedin.com/in/marie-dupont",
+        profil: "Chargée de communication avec 5 ans d'expérience dans les secteurs de la distribution et de l'événementiel. Rigoureuse, créative et à l'aise avec les outils digitaux.",
+        exps: [
+          { poste: "Chargée de communication", ent: "Agence Horizon", dates: "2021 – 2026", desc: "Création des supports print et web\nGestion des réseaux sociaux et de la newsletter\nSuivi des campagnes et bilan mensuel" },
+          { poste: "Assistante marketing", ent: "Boutique Lumière", dates: "2019 – 2021", desc: "Mise en rayon et animation des vitrines\nAnimation des réseaux sociaux" }
+        ],
+        formations: [
+          { diplome: "Master Communication", ecole: "Université de Nantes", annee: "2019" },
+          { diplome: "Baccalauréat STMG", ecole: "Lycée Henri-Avril", annee: "2016" }
+        ],
+        competences: "Photoshop, InDesign, WordPress, SEO, Canva",
+        langues: "Anglais (C1), Espagnol (B1)",
+        permis: "Permis B",
+        photo: ""
+      },
+      lettre: {
+        expNom: "Marie Dupont", expAdresse: "12 rue des Lilas, 44000 Nantes", expEmail: "marie.dupont@exemple.fr", expTel: "06 12 34 56 78",
+        destNom: "Service recrutement, Agence Horizon", destAdresse: "4 quai de la Fosse, 44000 Nantes",
+        lieu: "Nantes", date: "7 novembre 2026",
+        objet: "Candidature au poste de chargée de communication",
+        p1: "Madame, Monsieur,\n\nJe me permets de vous adresser ma candidature au poste de chargée de communication publié sur votre site.",
+        p2: "Depuis cinq ans, j'accompagne des marques dans la création de leurs supports print et digitaux, de la conception à la diffusion.",
+        p3: "Je serais ravie de mettre ces compétences au service de vos clients et de vos équipes.",
+        p4: "Je reste à votre disposition pour un entretien et vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.",
+        formule: "", signature: "Marie Dupont"
+      },
+      style: state.style
+    };
+    fillForms(); update();
+  });
+
+  const cvExamples = {
+    communication: {
+      prenom: "Marie", nom: "Dupont", titre: "Chargée de communication",
+      email: "marie.dupont@exemple.fr", tel: "06 12 34 56 78", ville: "Nantes",
+      web: "linkedin.com/in/marie-dupont",
+      profil: "Chargée de communication avec 5 ans d'expérience dans les secteurs de la distribution et de l'événementiel. Rigoureuse, créative et à l'aise avec les outils digitaux.",
+      exps: [
+        { poste: "Chargée de communication", ent: "Agence Horizon", dates: "2021 – 2026", desc: "Création des supports print et web\nGestion des réseaux sociaux et de la newsletter\nSuivi des campagnes et bilan mensuel" },
+        { poste: "Assistante marketing", ent: "Boutique Lumière", dates: "2019 – 2021", desc: "Mise en rayon et animation des vitrines\nAnimation des réseaux sociaux" }
+      ],
+      formations: [
+        { diplome: "Master Communication", ecole: "Université de Nantes", annee: "2019" },
+        { diplome: "Baccalauréat STMG", ecole: "Lycée Henri-Avril", annee: "2016" }
+      ],
+      competences: "Photoshop, InDesign, WordPress, SEO, Canva",
+      langues: "Anglais (C1), Espagnol (B1)", permis: "Permis B", centresInteret: "Photographie, randonnée", photo: ""
+    },
+    administratif: {
+      prenom: "Camille", nom: "Martin", titre: "Assistant administratif",
+      email: "camille.martin@exemple.fr", tel: "06 23 45 67 89", ville: "Lyon",
+      profil: "Assistant administratif organisé et polyvalent, habitué à gérer l'accueil, le suivi des dossiers et la coordination quotidienne d'une équipe.",
+      exps: [
+        { poste: "Assistant administratif", ent: "Cabinet Rhône Conseil", dates: "2022 – 2026", desc: "Accueil téléphonique et gestion des courriers\nMise à jour des dossiers clients et tableaux de suivi\nOrganisation des réunions et déplacements" },
+        { poste: "Agent d'accueil", ent: "Centre Médical Bellecour", dates: "2020 – 2022", desc: "Accueil des visiteurs et prise de rendez-vous\nClassement et numérisation des documents" }
+      ],
+      formations: [
+        { diplome: "BTS Gestion de la PME", ecole: "Lycée La Martinière Duchère", annee: "2020" },
+        { diplome: "Baccalauréat STMG", ecole: "Lycée Lumière", annee: "2018" }
+      ],
+      competences: "Word, Excel, Outlook, Gestion de dossiers, Accueil",
+      langues: "Anglais (B1)", permis: "Permis B", centresInteret: "Lecture, bénévolat", photo: ""
+    },
+    vente: {
+      prenom: "Alex", nom: "Bernard", titre: "Conseiller de vente",
+      email: "alex.bernard@exemple.fr", tel: "06 34 56 78 90", ville: "Bordeaux",
+      profil: "Conseiller de vente dynamique, orienté satisfaction client et résultats. Expérience en accueil, conseil personnalisé et mise en valeur des produits.",
+      exps: [
+        { poste: "Conseiller de vente", ent: "Maison & Style", dates: "2023 – 2026", desc: "Conseil et accompagnement des clients\nSuivi des ventes et fidélisation\nMise en rayon et valorisation des collections" },
+        { poste: "Vendeur polyvalent", ent: "Marché des Quais", dates: "2020 – 2023", desc: "Encaissement et tenue de caisse\nRéception des livraisons et réassort\nParticipation aux inventaires" }
+      ],
+      formations: [
+        { diplome: "Bac professionnel Métiers du commerce", ecole: "Lycée Gustave Eiffel", annee: "2020" }
+      ],
+      competences: "Conseil client, Vente, Encaissement, Merchandising, Fidélisation",
+      langues: "Anglais (conversationnel)", permis: "Permis B", centresInteret: "Football, cuisine", photo: ""
+    }
+  };
+
+  const letterExamples = {
+    communication: {
+      expNom: "Marie Dupont", expAdresse: "12 rue des Lilas, 44000 Nantes", expEmail: "marie.dupont@exemple.fr", expTel: "06 12 34 56 78",
+      destNom: "Service recrutement, Agence Horizon", destAdresse: "4 quai de la Fosse, 44000 Nantes",
+      lieu: "Nantes", date: "7 novembre 2026", objet: "Candidature au poste de chargée de communication",
+      p1: "Madame, Monsieur,\n\nJe souhaite vous proposer ma candidature au poste de chargée de communication. La diversité des projets menés par votre agence et l'attention portée aux stratégies digitales m'intéressent particulièrement.",
+      p2: "Au cours de mes cinq années d'expérience, j'ai conçu des supports de communication print et web, animé des réseaux sociaux et assuré le suivi de campagnes. Ces missions m'ont appris à adapter les messages aux publics et aux objectifs.",
+      p3: "Créative, organisée et à l'aise avec les outils digitaux, je pourrais contribuer à la préparation de vos campagnes et au suivi de vos clients.",
+      p4: "Je serais heureuse de pouvoir vous présenter plus en détail ma motivation lors d'un entretien.",
+      formule: "Je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.", signature: "Marie Dupont"
+    },
+    administratif: {
+      expNom: "Camille Martin", expAdresse: "8 rue des Tilleuls, 69003 Lyon", expEmail: "camille.martin@exemple.fr", expTel: "06 23 45 67 89",
+      destNom: "Service des ressources humaines, Rhône Conseil", destAdresse: "25 cours Lafayette, 69006 Lyon",
+      lieu: "Lyon", date: "7 novembre 2026", objet: "Candidature au poste d'assistant administratif",
+      p1: "Madame, Monsieur,\n\nVotre offre d'assistant administratif a retenu mon attention. Je souhaite mettre mon sens de l'organisation et mon goût du travail en équipe au service de votre cabinet.",
+      p2: "Dans mes expériences précédentes, j'ai assuré l'accueil, le suivi de dossiers, la gestion des courriers et l'organisation des réunions. Je maîtrise les outils bureautiques courants et veille à traiter chaque demande avec rigueur.",
+      p3: "Ma discrétion, ma polyvalence et ma capacité à prioriser les tâches me permettraient de soutenir efficacement vos équipes au quotidien.",
+      p4: "Je me tiens à votre disposition pour un entretien afin d'échanger sur ma candidature.",
+      formule: "Je vous prie d'agréer, Madame, Monsieur, mes salutations respectueuses.", signature: "Camille Martin"
+    },
+    vente: {
+      expNom: "Alex Bernard", expAdresse: "16 rue du Port, 33000 Bordeaux", expEmail: "alex.bernard@exemple.fr", expTel: "06 34 56 78 90",
+      destNom: "Responsable recrutement, Maison & Style", destAdresse: "10 rue Sainte-Catherine, 33000 Bordeaux",
+      lieu: "Bordeaux", date: "7 novembre 2026", objet: "Candidature au poste de conseiller de vente",
+      p1: "Madame, Monsieur,\n\nJe vous adresse ma candidature au poste de conseiller de vente. J'apprécie l'univers de votre enseigne et la place accordée au conseil personnalisé.",
+      p2: "Mon expérience en magasin m'a permis de développer l'écoute client, la vente-conseil, l'encaissement et la mise en valeur des produits. Je contribue également au réassort et au bon fonctionnement du point de vente.",
+      p3: "Dynamique et attentif à la satisfaction des clients, je souhaite m'investir au sein de votre équipe et participer à la réalisation de ses objectifs.",
+      p4: "Je serais ravi de vous rencontrer pour vous exposer ma motivation.",
+      formule: "Je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.", signature: "Alex Bernard"
+    }
+  };
+
+  async function copyPrompt(promptId, statusId) {
+    const prompt = $(promptId);
+    const status = $(statusId);
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("Presse-papiers indisponible");
+      await navigator.clipboard.writeText(prompt.value);
+      status.textContent = "Consigne copiée. Collez-la dans Gemini.";
+    } catch {
+      prompt.focus();
+      prompt.select();
+      let copied = false;
+      try {
+        copied = document.execCommand("copy");
+      } catch {
+        copied = false;
+      }
+      status.textContent = copied
+        ? "Consigne copiée. Collez-la dans Gemini."
+        : "Copie automatique indisponible : texte sélectionné, faites Ctrl+C.";
+    }
+  }
+
+  $("btn-copy-cv-prompt").addEventListener("click", () => copyPrompt("gemini-cv-prompt", "cv-prompt-status"));
+  $("btn-copy-letter-prompt").addEventListener("click", () => copyPrompt("gemini-letter-prompt", "letter-prompt-status"));
+
+  function parseGeminiJson(text) {
+    let source = text.trim();
+    const fenced = source.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+    if (fenced) source = fenced[1];
+    if (!source) throw new Error("Collez d’abord la réponse JSON de Gemini.");
+    let value;
+    try {
+      value = JSON.parse(source);
+    } catch {
+      throw new Error("Réponse non reconnue. Demandez à Gemini de répondre en JSON uniquement, puis copiez toute sa réponse.");
+    }
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      throw new Error("La réponse doit être un objet JSON.");
+    }
+    return value;
+  }
+
+  function readGeminiStrings(source, fields) {
+    const result = {};
+    for (const field of fields) {
+      const value = source[field];
+      if (value !== undefined && typeof value !== "string") {
+        throw new Error(`Le champ « ${field} » doit être du texte.`);
+      }
+      result[field] = value || "";
+    }
+    return result;
+  }
+
+  function readGeminiItems(source, field, fields) {
+    if (source[field] === undefined) return [];
+    if (!Array.isArray(source[field])) throw new Error(`Le champ « ${field} » doit être une liste.`);
+    return source[field].map((item, index) => {
+      if (!item || typeof item !== "object" || Array.isArray(item)) {
+        throw new Error(`L’élément ${index + 1} de « ${field} » n’est pas valide.`);
+      }
+      const normalized = {};
+      for (const key of fields) {
+        if (item[key] !== undefined && typeof item[key] !== "string") {
+          throw new Error(`Le champ « ${key} » de l’élément ${index + 1} doit être du texte.`);
+        }
+        normalized[key] = item[key] || "";
+      }
+      return normalized;
+    }).filter(item => Object.values(item).some(Boolean));
+  }
+
+  function importGeminiResult(kind) {
+    const isCV = kind === "cv";
+    const input = $(isCV ? "gemini-cv-result" : "gemini-letter-result");
+    const status = $(isCV ? "gemini-cv-import-status" : "gemini-letter-import-status");
+    try {
+      const parsed = parseGeminiJson(input.value);
+      if (isCV) {
+        const cv = readGeminiStrings(parsed,
+          ["prenom", "nom", "titre", "email", "tel", "adresse", "ville", "web", "profil", "competences", "langues", "permis", "centresInteret"]);
+        cv.exps = readGeminiItems(parsed, "exps", ["poste", "ent", "dates", "desc"]);
+        cv.formations = readGeminiItems(parsed, "formations", ["diplome", "ecole", "annee"]);
+        if (!Object.values(cv).some(value => Array.isArray(value) ? value.length > 0 : Boolean(value))) {
+          throw new Error("Aucun contenu CV exploitable n’a été trouvé.");
+        }
+        cv.photo = state.cv.photo;
+        state.cv = { ...emptyCV(), ...cv };
+      } else {
+        const lettre = readGeminiStrings(parsed,
+          ["expNom", "expAdresse", "expEmail", "expTel", "destNom", "destAdresse", "lieu", "date", "objet", "p1", "p2", "p3", "p4", "formule", "signature"]);
+        if (!Object.values(lettre).some(Boolean)) throw new Error("Aucun contenu lettre exploitable n’a été trouvé.");
+        state.lettre = {
+          ...emptyLettre(),
+          ...lettre
+        };
+      }
+      fillForms();
+      update();
+      setTab(kind);
+      status.className = "small mt-2 text-success";
+      status.textContent = `Réponse intégrée dans ${isCV ? "le CV" : "la lettre"}. Vous pouvez relire et modifier les champs.`;
+      input.value = "";
+    } catch (error) {
+      status.className = "small mt-2 text-danger";
+      status.textContent = error.message;
+    }
+  }
+
+  $("btn-import-gemini-cv").addEventListener("click", () => importGeminiResult("cv"));
+  $("btn-import-gemini-letter").addEventListener("click", () => importGeminiResult("lettre"));
+
+  $("btn-load-cv-example").addEventListener("click", () => {
+    state.cv = JSON.parse(JSON.stringify(cvExamples[$("cv-example").value]));
+    fillForms();
+    update();
+    setTab("cv");
+  });
+  $("btn-load-letter-example").addEventListener("click", () => {
+    state.lettre = JSON.parse(JSON.stringify(letterExamples[$("letter-example").value]));
+    fillForms();
+    update();
+    setTab("lettre");
+  });
+
+  $("btn-clear").addEventListener("click", () => {
+    if (!confirm("Effacer tout le contenu du CV et de la lettre ?")) return;
+    state = { cv: emptyCV(), lettre: emptyLettre(), style: state.style };
+    fillForms(); update();
+  });
+
+  // ---------- Import d'un CV existant ----------
+  function releaseImport() {
+    importedEl = null;
+    pdfAddMode = false;
+    $("pdf-tools").classList.add("d-none");
+    $("doc-cv").style.cursor = "";
+    $("doc-cv").classList.remove("imported", "pdf");
+    $("import-note").classList.add("d-none");
+  }
+
+  // Texte brut d'un PDF, ligne par ligne
+  async function pdfPlainText(buf) {
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    let out = "";
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const content = await (await pdf.getPage(i)).getTextContent();
+      content.items.forEach(it => { out += it.str + (it.hasEOL ? "\n" : " "); });
+      out += "\n";
+    }
+    return out;
+  }
+
+  // Chaque page est rendue en image fidèle, avec le texte éditable posé par-dessus
+  async function renderPdfPages(buf) {
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    const wrap = document.createElement("div");
+    for (let n = 1; n <= pdf.numPages; n++) {
+      const page = await pdf.getPage(n);
+      const base = page.getViewport({ scale: 1 });
+      const vp = page.getViewport({ scale: 794 / base.width });
+      const pg = document.createElement("div");
+      pg.className = "pdf-page";
+      pg.style.width = vp.width + "px";
+      pg.style.height = vp.height + "px";
+      const canvas = document.createElement("canvas");
+      canvas.width = vp.width;
+      canvas.height = vp.height;
+      canvas.style.width = vp.width + "px";
+      canvas.style.height = vp.height + "px";
+      await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+      pg.appendChild(canvas);
+
+      const content = await page.getTextContent();
+      content.items.forEach(it => {
+        if (!it.str.trim()) return;
+        const t = pdfjsLib.Util.transform(vp.transform, it.transform);
+        const size = Math.hypot(t[2], t[3]);
+        const scale = Math.hypot(vp.transform[0], vp.transform[1]);
+        const s = document.createElement("span");
+        s.className = "pdf-text";
+        s.textContent = it.str;
+        s.contentEditable = "true";
+        s.style.left = t[4] + "px";
+        s.style.top = (t[5] - size) + "px";
+        s.style.fontSize = size + "px";
+        s.style.lineHeight = size + "px";
+        s.style.width = Math.max(size, it.width * scale) + "px";
+        s.style.height = (size + 2) + "px";
+        s.style.overflow = "hidden";
+        s.addEventListener("input", () => s.classList.add("edited"));
+        pg.appendChild(s);
+      });
+      wrap.appendChild(pg);
+    }
+    return wrap;
+  }
+
+  // Titres de section reconnus (la ligne doit être exactement un titre)
+  const HEADINGS = [
+    [/^(profil|résumé|présentation|à propos)$/i, "profil"],
+    [/^expériences?( professionnelles?)?$/i, "exp"],
+    [/^(formations?|études|diplômes?|formations? et diplômes?)$/i, "edu"],
+    [/^compétences?( clés)?$/i, "skills"],
+    [/^langues?$/i, "langues"],
+    [/^(centres? d'intérêts?|loisirs|intérêts?)$/i, "interets"],
+    [/^permis( de conduire)?$/i, "permis"],
+    [/^(informations?( personnelles?)?|contact|coordonnées)$/i, "skip"],
+  ];
+  function headingOf(line) {
+    const t = line.replace(/\s*:\s*$/, "").trim();
+    const h = HEADINGS.find(([re]) => re.test(t));
+    return h ? h[1] : null;
+  }
+
+  // Les dates seules complètent l'expérience précédente au lieu de créer un faux poste.
+  function parseExperiences(ls) {
+    const out = [];
+    let cur = null;
+    const month = "(?:janv(?:ier)?|févr(?:ier)?|mars|avr(?:il)?|mai|juin|juil(?:let)?|août|sept(?:embre)?|oct(?:obre)?|nov(?:embre)?|déc(?:embre)?)\\.?";
+    const dateOnly = new RegExp(`^(?:de\\s+)?(?:${month}\\s+)?(?:19|20)\\d{2}(?:\\s*(?:à|–|-)\\s*(?:de\\s+)?(?:${month}\\s+)?(?:19|20)\\d{2})?$`, "i");
+    const datePart = new RegExp(`(?:de\\s+)?(?:${month}\\s+)?(?:19|20)\\d{2}(?:\\s*(?:à|–|-)\\s*(?:de\\s+)?(?:${month}\\s+)?(?:19|20)\\d{2})?`, "i");
+    ls.forEach(l => {
+      if (dateOnly.test(l) && cur) {
+        cur.dates = l;
+      } else if (/(?:19|20)\d{2}/.test(l)) {
+        const dm = l.match(datePart);
+        const poste = l.replace(dm?.[0] || "", "").replace(/[\s:–-]+$/, "").trim();
+        cur = { poste: poste || l, ent: "", dates: dm?.[0] || "", desc: [] };
+        out.push(cur);
+      } else if (!cur) {
+        cur = { poste: l, ent: "", dates: "", desc: [] };
+        out.push(cur);
+      } else if (!cur.ent && cur.desc.length === 0) {
+        cur.ent = l;
+      } else {
+        cur.desc.push(l);
+      }
+    });
+    return out.map(x => ({ poste: x.poste, ent: x.ent, dates: x.dates, desc: x.desc.join("\n") }));
+  }
+
+  // Formations : diplôme + année, puis l'école ; un diplôme peut tenir sur plusieurs lignes
+  function parseFormations(ls) {
+    const out = [];
+    let cur = null;
+    for (const l of ls) {
+      const isYear = /^(19|20)\d{2}$/.test(l);
+      const y = l.match(/(?:19|20)\d{2}/);
+      if (cur && cur.stage === "open" && isYear) {
+        cur.annee = l; cur.stage = "ecole";
+      } else if (cur && cur.stage === "open") {
+        cur.diplome += " " + (y ? l.replace(y[0], "").trim() : l);
+        if (y) { cur.annee = y[0]; cur.stage = "ecole"; }
+      } else if (cur && cur.stage === "ecole" && !y) {
+        cur.ecole = l; cur.stage = "done";
+      } else if (y) {
+        cur = { diplome: l.replace(y[0], "").replace(/[\s·:–-]+$/, "").trim(), ecole: "", annee: y[0], stage: "ecole" };
+        out.push(cur);
+      } else {
+        cur = { diplome: l, ecole: "", annee: "", stage: "open" };
+        out.push(cur);
+      }
+    }
+    return out.map(({ diplome, ecole, annee }) => ({ diplome, ecole, annee }));
+  }
+
+  // Répartit le texte brut dans les champs du formulaire
+  function parseCV(text) {
+    const L = text.replace(/\r/g, "").split("\n").map(s => s.trim()).filter(Boolean);
+    const out = { prenom: "", nom: "", titre: "", email: "", tel: "", adresse: "", ville: "", profil: "", exps: [], formations: [], competences: "", langues: "", permis: "", centresInteret: "" };
+
+    const email = text.match(/[\w.+-]+@[\w-]+\.[\w.]+/);
+    const phone = text.match(/(?:\+33\s?|0)[1-9](?:[\s.-]?\d{2}){4}/);
+    if (email) out.email = email[0];
+    if (phone) out.tel = phone[0];
+    const cityIndex = L.findIndex(line => /^\d{5}\s+\D/.test(line));
+    if (cityIndex >= 0) {
+      out.ville = L[cityIndex];
+      const previousLine = L[cityIndex - 1] || "";
+      if (/^\d/.test(previousLine) || /\b(rue|avenue|av\.|boulevard|bd|chemin|impasse|route|place|allée|residence|résidence)\b/i.test(previousLine)) {
+        out.adresse = previousLine;
+      }
+    }
+
+    const words = (L[0] || "").split(/\s+/).filter(Boolean);
+    if (words.length > 1) { out.nom = words.pop(); out.prenom = words.join(" "); }
+    else out.nom = L[0] || "";
+
+    let i = 1;
+    if (L[1] && !headingOf(L[1]) && !/@|\d{2}[\s.]\d{2}[\s.]\d{2}/.test(L[1])) { out.titre = L[1]; i = 2; }
+
+    const sec = { profil: [], exp: [], edu: [], skills: [], langues: [], permis: [], interets: [], skip: [] };
+    let cur = "profil";
+    for (const l of L.slice(i)) {
+      const h = headingOf(l);
+      if (h) { cur = h; continue; }
+      if (/^permis/i.test(l)) { sec.permis.push(l); continue; }
+      sec[cur].push(l);
+    }
+
+    out.profil = sec.profil.join("\n");
+    out.exps = parseExperiences(sec.exp);
+    out.formations = parseFormations(sec.edu);
+    out.competences = sec.skills.join(", ");
+    out.langues = sec.langues.join(", ");
+    out.permis = sec.permis.join(", ");
+    out.centresInteret = sec.interets.join(", ");
+    return out;
+  }
+
+  function htmlToText(html) {
+    const withBreaks = html.replace(/<br\s*\/?>|<\/(p|div|li|h[1-6]|tr|section)>/gi, "\n");
+    return new DOMParser().parseFromString(withBreaks, "text/html").body.textContent;
+  }
+
+  function prepareImportedEditable(node) {
+    const editableSelectors = ["p", "li", "div", "h1", "h2", "h3", "h4", "h5", "h6", "td", "th"];
+    node.querySelectorAll(editableSelectors.join(", ")).forEach(el => {
+      if (!el.closest(".pdf-page")) el.contentEditable = "true";
+    });
+    node.contentEditable = "false";
+  }
+
+  function showImported(parsed, node, kind) {
+    Object.assign(state.cv, parsed);
+    fillForms();                        // remplit les champs (et libère l'ancienne mise en page)
+    importedEl = node;
+    if (kind === "docx") prepareImportedEditable(node);
+    const doc = $("doc-cv");
+    doc.innerHTML = "";
+    doc.appendChild(node);
+    doc.classList.add("imported");
+    if (kind === "pdf") {
+      doc.classList.add("pdf");
+      $("pdf-tools").classList.remove("d-none");
+    }
+    setTab("cv");
+    update();
+
+    const nExp = parsed.exps.length, nForm = parsed.formations.length;
+    const note = $("import-note");
+    note.textContent = `Importé : ${nExp} expérience(s), ${nForm} formation(s). ` +
+      (kind === "pdf"
+        ? "Mise en page d'origine conservée. Cliquez sur un texte existant pour le corriger et redimensionnez sa zone si nécessaire, ou ajoutez un bloc à l'emplacement voulu. "
+        : "Document affiché à droite : modifiez le texte directement. ") +
+      "Modifier un champ du CV dans le formulaire remplace la mise en page par le modèle.";
+    note.classList.remove("d-none");
+  }
+
+  $("btn-add-pdf-text").addEventListener("click", () => {
+    pdfAddMode = !pdfAddMode;
+    $("doc-cv").style.cursor = pdfAddMode ? "crosshair" : "";
+    $("btn-add-pdf-text").innerHTML = pdfAddMode
+      ? '<i class="bi bi-x-lg"></i> Annuler'
+      : '<i class="bi bi-plus-lg"></i> Ajouter du texte';
+    $("pdf-tools-hint").textContent = pdfAddMode
+      ? "Cliquez dans la page à l’endroit où vous souhaitez placer le nouveau bloc."
+      : "Le PDF reste fixe. Les blocs ajoutés sont superposés et redimensionnables.";
+  });
+
+  $("doc-cv").addEventListener("click", e => {
+    if (!pdfAddMode) return;
+    const page = e.target.closest(".pdf-page");
+    if (!page) return;
+    const rect = page.getBoundingClientRect();
+    const scaleX = page.offsetWidth / rect.width;
+    const scaleY = page.offsetHeight / rect.height;
+    const text = document.createElement("span");
+    text.className = "pdf-text edited pdf-added";
+    text.contentEditable = "true";
+    text.setAttribute("role", "textbox");
+    text.setAttribute("aria-label", "Texte ajouté au document PDF");
+    text.textContent = "Votre texte";
+    text.style.left = `${Math.max(0, (e.clientX - rect.left) * scaleX)}px`;
+    text.style.top = `${Math.max(0, (e.clientY - rect.top) * scaleY)}px`;
+    text.style.fontSize = "14px";
+    text.style.lineHeight = "1.4";
+    page.appendChild(text);
+    pdfAddMode = false;
+    $("doc-cv").style.cursor = "";
+    $("btn-add-pdf-text").innerHTML = '<i class="bi bi-plus-lg"></i> Ajouter du texte';
+    $("pdf-tools-hint").textContent = "Le PDF reste fixe. Les blocs ajoutés sont superposés et redimensionnables.";
+    text.focus();
+    const range = document.createRange();
+    range.selectNodeContents(text);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  });
+
+  $("s-import").addEventListener("change", async e => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (!file) return;
+    const ext = file.name.split(".").pop().toLowerCase();
+    try {
+      const buf = await file.arrayBuffer();
+      if (ext === "pdf") {
+        if (!window.pdfjsLib) throw new Error("pdf.js non chargé");
+        const text = await pdfPlainText(buf.slice(0));
+        const node = await renderPdfPages(buf.slice(0));
+        showImported(parseCV(text), node, "pdf");
+      } else if (ext === "docx") {
+        if (!window.mammoth) throw new Error("mammoth non chargé");
+        const text = (await mammoth.extractRawText({ arrayBuffer: buf.slice(0) })).value;
+        const html = await mammoth.convertToHtml({ arrayBuffer: buf.slice(0) });
+        const node = document.createElement("div");
+        node.innerHTML = html.value;
+        showImported(parseCV(text), node, "docx");
+      } else if (ext === "doc") {
+        const bytes = new Uint8Array(buf);
+        if (bytes[0] === 0xD0 && bytes[1] === 0xCF) {
+          alert("Ce fichier est au format Word ancien (.doc binaire). Ouvrez-le dans Word, enregistrez-le en « Document Word (.docx) », puis importez-le ici.");
+          return;
+        }
+        // Les .doc créés par cette application sont du HTML enregistré avec l'extension .doc
+        const parsed = new DOMParser().parseFromString(new TextDecoder("utf-8").decode(buf), "text/html");
+        const source = parsed.querySelector(".doc") || parsed.body;
+        const node = document.createElement("div");
+        node.innerHTML = source.innerHTML;
+        showImported(parseCV(htmlToText(source.innerHTML)), node, "docx");
+      } else {
+        alert("Formats acceptés : PDF, Word (.docx) ou .doc.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Impossible de lire ce fichier. Vérifiez votre connexion internet : les outils de lecture sont chargés depuis internet. Les PDF scannés (images) ne sont pas lisibles.");
+    }
+  });
+
+  // ---------- Impression et export Word ----------
+  // Version autonome du document : pour Word, les pages importées deviennent des images
+  function portable(el) {
+    const clone = el.cloneNode(true);
+    const origCanvases = el.querySelectorAll("canvas");
+    clone.querySelectorAll("canvas").forEach((c, i) => {
+      const img = document.createElement("img");
+      img.src = origCanvases[i].toDataURL("image/png");
+      img.width = origCanvases[i].width;
+      img.height = origCanvases[i].height;
+      img.style.cssText = "position:absolute;left:0;top:0";
+      c.replaceWith(img);
+    });
+    clone.querySelectorAll(".pdf-text:not(.edited)").forEach(s => s.remove());
+    clone.querySelectorAll(".pdf-text.edited").forEach(s => {
+      s.style.color = "#111";
+      s.style.background = "#fff";
+      s.removeAttribute("contenteditable");
+    });
+    return clone.outerHTML.replace(/ d-none/g, "");
+  }
+
+  function saveFile(blob, name, desc, accept) {
+    if (window.showSaveFilePicker) {
+      return showSaveFilePicker({ suggestedName: name, types: [{ description: desc, accept }] })
+        .then(async h => { const w = await h.createWritable(); await w.write(blob); await w.close(); })
+        .catch(err => { if (err.name !== "AbortError") download(); });
+    }
+    download();
+    function download() {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+  }
+
+  $("btn-word").addEventListener("click", () => {
+    const tab = $("doc-cv").classList.contains("d-none") ? "lettre" : "cv";
+    const el = $(tab === "cv" ? "doc-cv" : "doc-lettre");
+    const accent = state.style.color;
+    const css = document.getElementById("doc-style").textContent
+      .replace(/var\(--accent\)/g, accent)
+      .replace(/var\(--tint\)/g, tintOf(accent, 0.12));
+    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+      <head><meta charset="utf-8"><title>${tab === "cv" ? "CV" : "Lettre"}</title><style>${css}</style></head>
+      <body>${portable(el)}</body></html>`;
+    const blob = new Blob(["\ufeff", html], { type: "application/msword" });
+    const base = (`${state.cv.prenom} ${state.cv.nom}`.trim() || "document").replace(/\s+/g, "_");
+    saveFile(blob, `${base}_${tab === "cv" ? "CV" : "Lettre"}.doc`, "Document Word", { "application/msword": [".doc"] });
+  });
+
+  function preparePrintLayout() {
+    const doc = $("doc-cv");
+    if (doc.classList.contains("d-none") || state.style.layout !== "barre" || importedEl) return;
+
+    let wrap = doc.querySelector(".wrap");
+    let side = doc.querySelector(".side");
+    let main = doc.querySelector(".main");
+    const measure = doc.cloneNode(true);
+    measure.removeAttribute("id");
+    measure.style.cssText = "position:absolute;left:-10000px;top:0;width:794px;max-width:none;min-height:0;height:auto;margin:0;padding:0;box-shadow:none;visibility:hidden";
+    wrap = measure.querySelector(".wrap");
+    wrap.style.cssText += ";position:static;display:flex;flex-direction:row;align-items:stretch;width:794px;height:auto;min-height:0;margin:0;transform:none";
+    side = measure.querySelector(".side");
+    side.style.cssText += ";box-sizing:border-box;width:270px;height:auto;min-height:0;flex:0 0 270px;overflow:visible;padding:42px 25px 34px;align-self:flex-start";
+    measure.querySelector(".side-head").style.marginBottom = "36px";
+    const photo = measure.querySelector(".side .photo");
+    if (photo) photo.style.cssText += ";width:138px;height:138px";
+    main = measure.querySelector(".main");
+    main.style.cssText += ";box-sizing:border-box;flex:1 1 auto;min-width:0;height:auto;min-height:0;padding:48px 39px 40px";
+    document.body.appendChild(measure);
+
+    const sideContentHeight = Math.max(0, ...Array.from(side.children, child => child.offsetTop + child.offsetHeight))
+      + parseFloat(getComputedStyle(side).paddingBottom);
+    const contentHeight = Math.max(wrap.getBoundingClientRect().height, main.scrollHeight, sideContentHeight);
+    measure.remove();
+
+    const a4Height = 1122.5;
+    const printScale = Math.min(1, (a4Height - 14) / contentHeight);
+    doc.style.setProperty("--print-scale", printScale.toFixed(4));
+    doc.style.setProperty("--print-content-height", `${contentHeight}px`);
+  }
+
+  $("btn-print").addEventListener("click", () => {
+    if (!$("pane-aide").classList.contains("d-none")) setTab(lastDocumentTab);
+    preparePrintLayout();
+    window.print();
+  });
+  window.addEventListener("beforeprint", preparePrintLayout);
+  window.addEventListener("afterprint", () => {
+    $("doc-cv").style.removeProperty("--print-scale");
+    $("doc-cv").style.removeProperty("--print-content-height");
+  });
+
+  // ---------- Démarrage ----------
+  if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  load();
+  fillForms();
+  $("s-color").value = state.style.color;
+  update();
+  setTab("cv");
+</script>
+</body>
+</html>
