@@ -19,7 +19,6 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 
 <!-- Styles de l'aperçu et de l'impression des documents -->
 <style id="doc-style">
@@ -413,7 +412,6 @@
       </div>
       <button class="btn btn-outline-light btn-sm" id="btn-demo" aria-label="Charger un exemple complet de CV et de lettre"><i class="bi bi-stars me-1"></i> Exemple complet</button>
       <button class="btn btn-outline-light btn-sm" id="btn-clear" aria-label="Effacer le formulaire"><i class="bi bi-eraser me-1"></i> Effacer</button>
-      <button class="btn btn-outline-light btn-sm" id="btn-word" aria-label="Télécharger un document Word au format DOCX"><i class="bi bi-file-earmark-word me-1"></i> Word (.docx)</button>
       <div class="print-help">
         <button class="btn btn-primary btn-sm" id="btn-print" aria-label="Imprimer ou générer un PDF" aria-describedby="print-help-popover"><i class="bi bi-printer me-1"></i> Imprimer / PDF</button>
         <div class="print-help-popover" id="print-help-popover" role="tooltip">
@@ -753,7 +751,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
           <div class="col-md-6 col-xl-3"><div class="card shadow-sm help-step"><div class="card-body">
             <span class="badge rounded-pill text-bg-primary mb-2">4</span>
             <h3 class="h6">Imprimez ou exportez</h3>
-            <p class="small mb-0">Téléchargez un DOCX modifiable avec « Word (.docx) » : le modèle et les couleurs choisis sont repris. « Imprimer / PDF » conserve le rendu visuel exact de l’aperçu.</p>
+            <p class="small mb-0">Utilisez « Imprimer / PDF » pour imprimer votre document ou l’enregistrer en PDF avec le rendu visuel de l’aperçu.</p>
           </div></div></div>
         </div>
         <h3 class="h5 mb-3">Questions fréquentes</h3>
@@ -765,10 +763,6 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
           <div class="accordion-item">
             <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-import" aria-expanded="false" aria-controls="faq-import">Puis-je importer un CV ou une lettre ?</button></h4>
             <div id="faq-import" class="accordion-collapse collapse" data-bs-parent="#help-faq"><div class="accordion-body">Oui. Après l’import d’un CV PDF ou Word, les informations reconnues s’affichent immédiatement dans le modèle choisi. Le bouton « Voir la mise en page d’origine » permet de consulter le document source; modifier un champ applique le modèle de l’application. Pour une lettre, les rubriques reconnues sont transférées dans le modèle de lettre. La mise en page d’origine de la lettre n’est pas reprise; relisez et corrigez les champs. Les PDF scannés sans texte sélectionnable ne peuvent pas être analysés.</div></div>
-          </div>
-          <div class="accordion-item">
-            <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-word" aria-expanded="false" aria-controls="faq-word">Le fichier Word est-il modifiable ?</button></h4>
-            <div id="faq-word" class="accordion-collapse collapse" data-bs-parent="#help-faq"><div class="accordion-body">Oui. « Word (.docx) » crée un document DOCX modifiable et reprend la mise en page sélectionnée, les couleurs, les titres et les listes. Les dégradés et certains détails CSS sont adaptés aux possibilités de Word; utilisez « Imprimer / PDF » pour conserver le rendu visuel exact de l’application.</div></div>
           </div>
           <div class="accordion-item">
             <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-gemini" aria-expanded="false" aria-controls="faq-gemini">Comment utiliser Gemini avec l’application ?</button></h4>
@@ -2098,31 +2092,31 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
       const main = [];
       const experiences = newestFirstExperiences(c.exps).map(({ item }) => item).filter(item => item.poste || item.ent || item.dates || item.desc);
       const formations = c.formations.filter(item => item.diplome || item.ecole || item.annee);
-      const addExperienceSection = target => {
+      const addExperienceSection = (target, inSidebar = false) => {
         if (!experiences.length) return;
-        target.push(wordHeading("Expériences professionnelles", sidebarLayout ? { color: "FFFFFF", sidebar: true } : {}));
+        target.push(wordHeading("Expériences professionnelles", inSidebar ? { color: "FFFFFF", sidebar: true } : {}));
         experiences.forEach(item => {
           target.push(wordParagraph([item.poste, item.dates].filter(Boolean).join("  ·  "), {
-            bold: true, color: sidebarLayout ? "FFFFFF" : "1F2937", size: sidebarLayout ? 21 : 22,
+            bold: true, color: inSidebar ? "FFFFFF" : "1F2937", size: inSidebar ? 21 : 22,
             spacing: { before: 110, after: 35 }, keepNext: Boolean(item.ent)
           }));
           if (item.ent) target.push(wordParagraph(item.ent, {
-            color: sidebarLayout ? "FFFFFF" : "586474", size: 20, spacing: { after: 50 }, keepNext: Boolean(item.desc)
+            color: inSidebar ? "FFFFFF" : "586474", size: 20, spacing: { after: 50 }, keepNext: Boolean(item.desc)
           }));
           String(item.desc || "").split("\n").map(line => line.trim()).filter(Boolean).forEach(line => {
             target.push(wordParagraph(line, {
-              bullet: { level: 0, indent: sidebarLayout ? 250 : 300 },
-              color: sidebarLayout ? "FFFFFF" : undefined, size: sidebarLayout ? 19 : 20,
+              bullet: { level: 0, indent: inSidebar ? 250 : 300 },
+              color: inSidebar ? "FFFFFF" : "303844", size: inSidebar ? 19 : 20,
               spacing: { after: 35 }
             }));
           });
         });
       };
-      const addFormationSection = target => {
+      const addFormationSection = (target, inSidebar = false) => {
         if (!formations.length) return;
-        target.push(wordHeading("Formation", sidebarLayout ? { color: "FFFFFF", sidebar: true } : {}));
+        target.push(wordHeading("Formation", inSidebar ? { color: "FFFFFF", sidebar: true } : {}));
         formations.forEach(item => target.push(wordParagraph([item.diplome, item.ecole, item.annee].filter(Boolean).join("  ·  "), {
-          color: sidebarLayout ? "FFFFFF" : undefined, size: sidebarLayout ? 19 : 21,
+          color: inSidebar ? "FFFFFF" : "303844", size: inSidebar ? 19 : 21,
           spacing: { after: 90 }
         })));
       };
@@ -2244,28 +2238,6 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
       }]
     });
   }
-
-  $("btn-word").addEventListener("click", async () => {
-    const tab = $("doc-cv").classList.contains("d-none") ? "lettre" : "cv";
-    const button = $("btn-word");
-    button.disabled = true;
-    try {
-      if (!window.docx?.Document || !window.docx?.Packer) {
-        throw new Error("L’outil de création DOCX n’a pas pu être chargé. Vérifiez votre connexion internet puis réessayez.");
-      }
-      const document = buildWordDocument(tab);
-      const blob = await window.docx.Packer.toBlob(document);
-      const base = (`${state.cv.prenom} ${state.cv.nom}`.trim() || "document").replace(/\s+/g, "_");
-      await saveFile(blob, `${base}_${tab === "cv" ? "CV" : "Lettre"}.docx`, "Document Word", {
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"]
-      });
-    } catch (error) {
-      console.error("Échec de la création du document DOCX :", error);
-      alert(error instanceof Error ? error.message : "Le document Word n’a pas pu être créé.");
-    } finally {
-      button.disabled = false;
-    }
-  });
 
   function preparePrintLayout() {
     const doc = $("doc-cv");
