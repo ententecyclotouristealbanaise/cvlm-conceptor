@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 
 <!-- Styles de l'aperçu et de l'impression des documents -->
 <style id="doc-style">
@@ -605,6 +606,7 @@
       </div>
       <button class="btn btn-outline-light btn-sm" id="btn-demo" aria-label="Charger un exemple complet de CV et de lettre"><i class="bi bi-stars me-1"></i> Exemple complet</button>
       <button class="btn btn-outline-light btn-sm" id="btn-clear" aria-label="Effacer le formulaire"><i class="bi bi-eraser me-1"></i> Effacer</button>
+      <button class="btn btn-outline-light btn-sm d-none" id="btn-letter-docx" type="button" aria-label="Télécharger la lettre de motivation au format DOCX"><i class="bi bi-file-earmark-word me-1"></i> Lettre Word (.docx)</button>
       <div class="print-help">
         <button class="btn btn-primary btn-sm" id="btn-print" aria-label="Imprimer ou générer un PDF" aria-describedby="print-help-popover"><i class="bi bi-printer me-1"></i> Imprimer / PDF</button>
         <div class="print-help-popover" id="print-help-popover" role="tooltip">
@@ -773,21 +775,54 @@
             <a class="small" href="https://gemini.google.com/app" target="_blank" rel="noopener noreferrer">Besoin d’aide à la rédaction ? Ouvrir Gemini</a>
             <details class="mt-2">
               <summary class="small">Consigne Gemini pour créer ou améliorer un CV</summary>
-              <textarea class="form-control form-control-sm mt-2" id="gemini-cv-prompt" rows="8" readonly>Agis comme un conseiller expert en recrutement et en rédaction de CV en français. Aide-moi à créer ou améliorer mon CV pour le poste visé.
+              <textarea class="form-control form-control-sm mt-2" id="gemini-cv-prompt" rows="8" readonly>Tu es conseiller expert en recrutement et en rédaction de CV. Tu écris en français.
 
-Respecte ces règles :
-- Utilise uniquement les informations que je fournis. N’invente ni expérience, ni diplôme, ni compétence, ni résultat chiffré.
-- Si une information essentielle manque, pose-moi une question ou indique clairement un champ à compléter entre crochets.
-- Mets les expériences de la plus récente à la plus ancienne.
-- Rédige des formulations claires, concrètes et professionnelles, avec des verbes d’action et des résultats seulement s’ils sont fournis.
-- Adapte les mots-clés à l’offre sans exagérer ni ajouter de compétences non confirmées.
-- Propose un CV lisible, sobre, compatible avec les logiciels de recrutement (ATS), idéalement sur une page si le contenu le permet.
-- Présente le résultat par rubriques (titre, profil, expériences, formations, compétences, langues et autres informations). Ne mets aucun conseil ou commentaire dans le texte final du CV.
+OBJECTIF
+Créer ou améliorer mon CV pour le poste que je vise, de façon lisible, sobre et compatible avec les logiciels de recrutement (ATS), idéalement sur une page.
 
-Avant de commencer, demande-moi le poste visé et l’offre d’emploi si je ne les ai pas fournis. Je collerai ensuite mes informations anonymisées. Ne demande pas mon adresse complète, téléphone ou email.
+RÈGLES GÉNÉRALES
+- N'invente jamais d'expérience, de diplôme, de compétence, de responsabilité ni de résultat chiffré. Utilise uniquement les informations que je fournis.
+- Si une information essentielle manque, pose une question précise, ou laisse un champ entre crochets à compléter, par exemple [chiffre clé].
+- Ne demande jamais mon adresse complète, mon téléphone ni mon e-mail. Je fournirai des données anonymisées.
+- Tu peux reformuler et mettre en valeur, mais sans exagérer.
+- Utilise le vocabulaire de l'offre quand il correspond à mon expérience réelle, sans ajouter de compétences non confirmées.
+- Verbes d'action au début de chaque mission. Résultats chiffrés seulement s'ils sont fournis.
+- Ton clair, factuel et concis. Pas de superlatifs ni de formules creuses comme « dynamique et passionné ».
 
-Quand les informations sont suffisantes, réponds avec un objet JSON valide uniquement, sans bloc Markdown ni texte avant ou après, en respectant exactement ce format. Pour les données personnelles non fournies, laisse une chaîne vide. N’ajoute pas de propriétés :
-{"prenom":"","nom":"","titre":"","email":"","tel":"","adresse":"","ville":"","web":"","profil":"","exps":[{"poste":"","ent":"","dates":"","desc":""}],"formations":[{"diplome":"","ecole":"","annee":""}],"competences":"","langues":"","permis":"","centresInteret":""}</textarea>
+ÉTAPE 1 : COLLECTE (une question à la fois)
+Pose-moi les questions suivantes une par une. Attends ma réponse avant de passer à la suivante. Ne pose jamais plusieurs questions dans le même message.
+1. Quel est le poste visé, et peux-tu me coller le texte de l'offre d'emploi ?
+2. Quelles sont mes expériences professionnelles ? Demande-les une par une, de la plus récente à la plus ancienne (poste, entreprise, dates, missions).
+3. Quels sont mes diplômes et formations ?
+4. Quelles sont mes compétences techniques, mes outils et mes langues, avec le niveau pour les langues ?
+5. Ai-je un permis de conduire, des centres d'intérêt ou des certifications à ajouter ?
+6. Ai-je 2 à 3 réalisations concrètes, avec un chiffre ou un résultat si possible ? Si je n'en ai pas, passe à la suite sans insister.
+Si une réponse est incomplète, relance avec une seule question de précision avant de continuer.
+
+ÉTAPE 2 : RÉDACTION (quand les informations sont suffisantes)
+Analyse d'abord l'offre : intitulé, missions, compétences clés, outils, niveau de séniorité. Puis produis le CV avec ces rubriques :
+- titre ;
+- profil : 3 à 4 lignes qui relient mon parcours aux besoins du poste ;
+- expériences : de la plus récente à la plus ancienne, avec les missions reformulées ;
+- formations ;
+- compétences ;
+- langues et autres informations (permis, centres d'intérêt).
+Le texte final ne contient aucun conseil ni commentaire.
+
+FORMAT DE SORTIE
+Dès que tu disposes des informations nécessaires, réponds uniquement avec un objet JSON valide : pas de texte avant ni après, pas de bloc Markdown, pas de commentaire. Utilise exactement ces clés, sans en ajouter ni en retirer :
+
+{"prenom":"","nom":"","titre":"","email":"","tel":"","adresse":"","ville":"","web":"","profil":"","exps":[{"poste":"","ent":"","dates":"","desc":""}],"formations":[{"diplome":"","ecole":"","annee":""}],"competences":"","langues":"","permis":"","centresInteret":""}
+
+Contraintes de formatage du JSON :
+- Pour les données personnelles non fournies, laisse une chaîne vide ("").
+- Chaque valeur est une chaîne sur une seule ligne, sans retour à la ligne.
+- N'utilise pas de guillemets droits (") à l'intérieur des textes. Remplace-les par des guillemets typographiques (« ») ou par des apostrophes.
+- Dans "desc", sépare les missions par " · " (point médian) plutôt que par des retours à la ligne.
+- "dates" suit le format MM/AAAA – MM/AAAA, ou MM/AAAA – présent.
+- "competences" et "langues" sont des chaînes ; sépare les éléments par des virgules.
+
+Si je demande une correction ou une version plus courte pendant la discussion, réponds à nouveau uniquement avec le JSON mis à jour.</textarea>
               <button class="btn btn-outline-secondary btn-sm mt-2" id="btn-copy-cv-prompt" type="button">Copier la consigne</button>
               <span class="small ms-2" id="cv-prompt-status" role="status" aria-live="polite"></span>
               <div class="form-text mt-2">Demande ensuite une réponse en JSON uniquement, puis colle-la dans « Importer la réponse Gemini » ci-dessous.</div>
@@ -876,20 +911,45 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
             <a class="small" href="https://gemini.google.com/app" target="_blank" rel="noopener noreferrer">Besoin d’aide à la rédaction ? Ouvrir Gemini</a>
             <details class="mt-2">
               <summary class="small">Consigne Gemini pour rédiger une lettre</summary>
-              <textarea class="form-control form-control-sm mt-2" id="gemini-letter-prompt" rows="8" readonly>Agis comme un conseiller en recrutement et rédige avec moi une lettre de motivation personnalisée, en français, pour le poste et l’entreprise que je vais indiquer.
+              <textarea class="form-control form-control-sm mt-2" id="gemini-letter-prompt" rows="8" readonly>Tu es conseiller en recrutement et rédacteur de lettres de motivation. Tu écris en français.
 
-Respecte ces règles :
-- N’invente aucune expérience, compétence, réalisation, raison de candidature ou information sur l’entreprise.
-- Appuie chaque affirmation sur les éléments que je fournis. Si un élément manque, pose une question ou laisse un champ à compléter entre crochets.
-- Adopte un ton professionnel, naturel, direct et personnel, sans phrases toutes faites ni superlatifs.
-- Fais le lien entre les besoins de l’offre, mes compétences réelles et ma motivation pour l’entreprise.
-- Rédige une lettre concise d’environ 250 à 350 mots, structurée en paragraphes, avec un objet et une formule de politesse appropriée.
-- Donne uniquement la lettre finalisée, sans explication autour.
+OBJECTIF
+Rédiger avec moi une lettre de motivation personnalisée pour le poste et l’entreprise que je t’indiquerai.
 
-Demande-moi l’intitulé du poste, l’offre d’emploi et quelques informations professionnelles pertinentes si elles manquent. Je fournirai des données anonymisées : ne demande pas mon adresse complète, téléphone ou email.
+RÈGLES GÉNÉRALES
+- N’invente jamais d’expérience, de compétence, de réalisation, de motivation ni d’information sur l’entreprise. Chaque affirmation doit s’appuyer sur les éléments que je fournis ou sur l’offre.
+- Si une information manque, pose une question précise, ou laisse un champ entre crochets à compléter, par exemple [chiffre clé].
+- Ne demande jamais mon adresse complète, mon téléphone ni mon e-mail. Je fournirai des données anonymisées.
+- Ton professionnel, naturel, direct et personnel. Évite les formules toutes faites, les superlatifs et la flatterie envers l’entreprise.
 
-Quand les informations sont suffisantes, réponds avec un objet JSON valide uniquement, sans bloc Markdown ni texte avant ou après, en respectant exactement ce format. Pour les données personnelles non fournies, laisse une chaîne vide. N’ajoute pas de propriétés :
-{"expNom":"","expAdresse":"","expEmail":"","expTel":"","destNom":"","destAdresse":"","lieu":"","date":"","objet":"","p1":"","p2":"","p3":"","p4":"","formule":"","signature":""}</textarea>
+ÉTAPE 1 : COLLECTE (une question à la fois)
+Pose-moi les questions suivantes une par une. Attends ma réponse avant de passer à la suivante. Ne pose jamais plusieurs questions dans le même message.
+1. Quel est l’intitulé exact du poste ?
+2. Peux-tu me coller le texte de l’offre d’emploi ?
+3. Quel est le nom de l’entreprise ?
+4. Quelles sont 2 à 3 expériences ou compétences pertinentes pour ce poste ? Demande-les une par une, avec un exemple concret ou un résultat si je l’ai.
+5. Qu’est-ce qui me motive dans cette entreprise ou ce poste ? Si je ne sais pas formuler, propose-moi une piste tirée de l’offre et demande-moi de la valider.
+Si une réponse est incomplète, relance avec une seule question de précision avant de continuer.
+
+ÉTAPE 2 : RÉDACTION (quand les informations sont suffisantes)
+Analyse mentalement l’offre : besoins principaux, compétences clés, enjeux du poste. Puis rédige une lettre concise, d’environ 250 à 350 mots, structurée en quatre paragraphes :
+- p1 : accroche reliant mon intérêt au poste ou à l’entreprise, sans phrase générique ;
+- p2 et p3 : deux atouts concrets, chacun relié à un besoin de l’offre ;
+- p4 : motivation spécifique à l’entreprise, puis ouverture vers un échange.
+
+FORMAT DE SORTIE
+Dès que tu disposes des informations nécessaires, réponds uniquement avec un objet JSON valide : pas de texte avant ni après, pas de bloc Markdown, pas de commentaire. Utilise exactement ces clés, sans en ajouter ni en retirer :
+
+{"expNom":"","expAdresse":"","expEmail":"","expTel":"","destNom":"","destAdresse":"","lieu":"","date":"","objet":"","p1":"","p2":"","p3":"","p4":"","formule":"","signature":""}
+
+Contraintes de formatage du JSON :
+- Pour les données personnelles non fournies, laisse une chaîne vide ("").
+- Chaque valeur est une chaîne sur une seule ligne, sans retour à la ligne.
+- N’utilise pas de guillemets droits (") à l’intérieur des textes. Remplace-les par des guillemets typographiques (« ») ou par des apostrophes.
+- Le contenu de p1 à p4 forme le corps de la lettre, d’environ 250 à 350 mots au total.
+- "formule" contient la formule de politesse, et "signature" le prénom et nom anonymisés ou vides.
+
+Si je demande une correction ou une version plus courte pendant la discussion, réponds à nouveau uniquement avec le JSON mis à jour.</textarea>
               <button class="btn btn-outline-secondary btn-sm mt-2" id="btn-copy-letter-prompt" type="button">Copier la consigne</button>
               <span class="small ms-2" id="letter-prompt-status" role="status" aria-live="polite"></span>
               <div class="form-text mt-2">Demande ensuite une réponse en JSON uniquement, puis colle-la dans « Importer la réponse Gemini » ci-dessous.</div>
@@ -970,7 +1030,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
           <div class="col-md-6 col-xl-3"><div class="card shadow-sm help-step"><div class="card-body">
             <span class="badge rounded-pill text-bg-primary mb-2">4</span>
             <h3 class="h6">Imprimez ou exportez</h3>
-            <p class="small mb-0">Utilisez « Imprimer / PDF » pour imprimer votre document ou l’enregistrer en PDF avec le rendu visuel de l’aperçu.</p>
+            <p class="small mb-0">Utilisez « Imprimer / PDF » pour imprimer votre document ou l’enregistrer en PDF. Dans l’onglet Lettre, vous pouvez aussi télécharger la lettre au format Word (.docx).</p>
           </div></div></div>
         </div>
         <h3 class="h5 mb-3">Questions fréquentes</h3>
@@ -993,7 +1053,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
           </div>
           <div class="accordion-item">
             <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-print" aria-expanded="false" aria-controls="faq-print">Comment éviter les marges à l’impression ?</button></h4>
-            <div id="faq-print" class="accordion-collapse collapse" data-bs-parent="#help-faq"><div class="accordion-body">Dans les réglages d’impression, choisissez A4, « Aucune » pour les marges, une échelle de 100 % et l’impression des arrière-plans. Les marges physiques dépendent aussi de l’imprimante; un bord à bord sur papier exige un mode sans bordure.</div></div>
+            <div id="faq-print" class="accordion-collapse collapse" data-bs-parent="#help-faq"><div class="accordion-body">Dans les réglages d’impression, choisissez A4, « Aucune » pour les marges, une échelle de 100 % et l’impression des arrière-plans. Les marges physiques dépendent aussi de l’imprimante; un bord à bord sur papier exige un mode sans bordure. Dans l’onglet Lettre, le bouton « Lettre Word (.docx) » permet de télécharger uniquement la lettre en document Word.</div></div>
           </div>
           <div class="accordion-item">
             <h4 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-save" aria-expanded="false" aria-controls="faq-save">Mes informations sont-elles enregistrées ?</button></h4>
@@ -1460,6 +1520,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
     $("style-panel").classList.toggle("d-none", tab === "aide");
     $("cv-top-actions").classList.toggle("d-none", tab !== "cv");
     $("letter-top-actions").classList.toggle("d-none", tab !== "lettre");
+    $("btn-letter-docx").classList.toggle("d-none", tab !== "lettre");
     $("start-examples").classList.toggle("d-none", tab === "aide");
     $("start-example-cv").classList.toggle("d-none", tab !== "cv");
     $("start-example-lettre").classList.toggle("d-none", tab !== "lettre");
@@ -2455,29 +2516,30 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
 
     if (tab === "lettre") {
       const l = state.lettre;
+      const letterSpace = value => Math.round(value * state.style.letterSpacing / 100);
       const sender = [l.expNom, l.expAdresse, l.expEmail, l.expTel].filter(Boolean);
       const recipient = [l.destNom, l.destAdresse].filter(Boolean);
       sender.forEach((line, index) => children.push(wordParagraph(line, {
         bold: index === 0, color: index === 0 ? accent : undefined, size: index === 0 ? 25 : 21,
-        spacing: { after: index === sender.length - 1 ? 180 : 35 }
+        spacing: { after: letterSpace(index === sender.length - 1 ? 180 : 35) }
       })));
       recipient.forEach((line, index) => children.push(wordParagraph(line, {
         alignment: AlignmentType.RIGHT, bold: index === 0, color: index === 0 ? accent : undefined,
-        spacing: { after: index === recipient.length - 1 ? 200 : 35 }
+        spacing: { after: letterSpace(index === recipient.length - 1 ? 200 : 35) }
       })));
       if (l.lieu || l.date) children.push(wordParagraph([l.lieu, l.date].filter(Boolean).join(", "), {
-        alignment: AlignmentType.RIGHT, color: accent, spacing: { after: 260 }
+        alignment: AlignmentType.RIGHT, color: accent, spacing: { after: letterSpace(260) }
       }));
       if (l.objet) children.push(wordParagraph(`Objet : ${l.objet}`, {
-        bold: true, color: accent, border: { bottom: accentBorder }, spacing: { after: 240 }, keepNext: true
+        bold: true, color: accent, spacing: { after: letterSpace(260) }, keepNext: true
       }));
       [l.p1, l.p2, l.p3, l.p4].filter(Boolean).forEach(text => {
         children.push(wordParagraph(text, {
-          alignment: AlignmentType.JUSTIFIED, size: 22, spacing: { after: 200, line: 280, lineRule: "auto" }
+          alignment: AlignmentType.JUSTIFIED, size: 22, spacing: { after: letterSpace(200), line: 280, lineRule: "auto" }
         }));
       });
       if (l.formule) children.push(wordParagraph(l.formule, {
-        spacing: { before: 200, after: 220, line: 280, lineRule: "auto" }
+        spacing: { before: letterSpace(200), after: letterSpace(220), line: 280, lineRule: "auto" }
       }));
       if (l.signature) children.push(wordParagraph(l.signature, { bold: true, color: accent, spacing: { after: 0 } }));
     } else {
@@ -2647,6 +2709,31 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
       }]
     });
   }
+
+  $("btn-letter-docx").addEventListener("click", async event => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    try {
+      if (!window.docx?.Document || !window.docx?.Packer) {
+        throw new Error("L’outil de création DOCX n’a pas pu être chargé. Vérifiez votre connexion internet puis réessayez.");
+      }
+      const document = buildWordDocument("lettre");
+      const blob = await window.docx.Packer.toBlob(document);
+      const sender = (state.lettre.expNom || "Lettre_de_motivation")
+        .replace(/[<>:"/\\|?*\u0000-\u001f]/g, " ")
+        .trim()
+        .replace(/\s+/g, "_")
+        .slice(0, 80) || "Lettre_de_motivation";
+      await saveFile(blob, `${sender}_Lettre.docx`, "Document Word", {
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"]
+      });
+    } catch (error) {
+      console.error("Échec de la création du document DOCX :", error);
+      alert(error instanceof Error ? error.message : "Le document Word n’a pas pu être créé.");
+    } finally {
+      button.disabled = false;
+    }
+  });
 
   function preparePrintLayout() {
     const doc = $("doc-cv");
