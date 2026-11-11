@@ -130,6 +130,8 @@
   .lt .exp { text-align: left; }
   .lt .dest { margin-left: auto; width: 50%; margin-bottom: 24px; }
   .lt .objet b { color: var(--accent); }
+  .doc[data-document=lettre]:not(.imported) .lt p { margin-bottom: calc(12px * var(--letter-spacing, 1)); }
+  .doc[data-document=lettre]:not(.imported) .lt .dest { margin-bottom: calc(24px * var(--letter-spacing, 1)); }
 </style>
 
 <!-- Styles de l'application -->
@@ -365,6 +367,22 @@
     .doc[data-layout=barre] .main .sec h3 { font-size: 10px; letter-spacing: .08em; }
     .doc[data-layout=barre] .main .item b { font-size: 11px; }
     .doc[data-layout=barre] .main .meta { white-space: normal; }
+  }
+
+  .doc[data-document=cv]:not(.imported) .sec { margin-bottom: calc(20px * var(--cv-spacing, 1)); }
+  .doc[data-document=cv]:not(.imported) .sec h3 { margin-bottom: calc(12px * var(--cv-spacing, 1)); }
+  .doc[data-document=cv]:not(.imported) .item { margin-bottom: calc(14px * var(--cv-spacing, 1)); }
+  .doc[data-document=cv]:not(.imported) .desc { margin-top: calc(4px * var(--cv-spacing, 1)); }
+  .doc[data-document=cv][data-layout=barre]:not(.imported) .side .sec { margin-bottom: calc(27px * var(--cv-spacing, 1)); }
+  .doc[data-document=cv][data-layout=barre]:not(.imported) .side .item { margin-bottom: calc(8px * var(--cv-spacing, 1)); }
+  .doc[data-document=cv][data-layout=barre]:not(.imported) .side .tag { margin-bottom: calc(6px * var(--cv-spacing, 1)); }
+  .doc[data-document=cv][data-layout=barre]:not(.imported) .main .sec h3 { margin-bottom: calc(15px * var(--cv-spacing, 1)); }
+  .doc[data-document=cv][data-layout=barre]:not(.imported) .main .item { margin-bottom: calc(18px * var(--cv-spacing, 1)); }
+  .doc[data-document=cv][data-layout=barre]:not(.imported) .main .desc { margin-top: calc(5px * var(--cv-spacing, 1)); }
+  .doc[data-document=cv]:not(.imported) .tag { margin-bottom: calc(6px * var(--cv-spacing, 1)); }
+
+  @media (max-width: 575.98px) {
+    .doc[data-document=cv][data-layout=barre]:not(.imported) .side .sec { margin-bottom: calc(18px * var(--cv-spacing, 1)); }
   }
 
   @media print {
@@ -660,7 +678,7 @@
 
       <div class="card shadow-sm mb-3" id="style-panel">
         <div class="card-body">
-          <div class="card-title-sm">Mise en forme</div>
+          <div class="card-title-sm" id="style-panel-title">Mise en forme du CV</div>
           <div class="row g-2">
             <div class="col-6">
               <label class="form-label" for="s-font">Police</label>
@@ -680,18 +698,18 @@
               </select>
             </div>
             <div class="col-6">
-              <label class="form-label" for="s-color">Titres et dates</label>
+              <label class="form-label" id="s-color-label" for="s-color">Titres et dates</label>
               <input type="color" class="form-control form-control-color" id="s-color" data-style="color" title="Couleur des titres et des dates">
             </div>
-            <div class="col-6 d-none" id="banner-color-control">
+            <div class="col-6 d-none cv-only-control" id="banner-color-control">
               <label class="form-label" for="s-banner-color">Couleur du bandeau</label>
               <input type="color" class="form-control form-control-color" id="s-banner-color" data-style="bannerColor" title="Couleur indépendante du bandeau">
             </div>
-            <div class="col-6 d-none" id="sidebar-start-color-control">
+            <div class="col-6 d-none cv-only-control" id="sidebar-start-color-control">
               <label class="form-label" for="s-sidebar-start-color">Début du dégradé</label>
               <input type="color" class="form-control form-control-color" id="s-sidebar-start-color" data-style="sidebarStartColor" title="Couleur de départ du dégradé de la barre latérale">
             </div>
-            <div class="col-12">
+            <div class="col-12 cv-only-control">
               <label class="form-label" for="s-layout">Mise en page du CV</label>
               <select class="form-select" id="s-layout" data-style="layout">
                 <option value="classique">Classique</option>
@@ -700,7 +718,7 @@
                 <option value="degrade">Dégradé</option>
               </select>
             </div>
-            <div class="col-12">
+            <div class="col-12 cv-only-control">
               <label class="form-label" for="s-section-order">Ordre des rubriques</label>
               <select class="form-select" id="s-section-order" data-style="sectionOrder">
                 <option value="experiences-first">Expériences, puis formations</option>
@@ -708,6 +726,19 @@
               </select>
             </div>
             <div class="col-12">
+              <div class="d-flex align-items-center justify-content-between">
+                <label class="form-label mb-1" id="s-section-spacing-label" for="s-section-spacing">Espacement des rubriques</label>
+                <output class="small fw-semibold" id="s-section-spacing-value" for="s-section-spacing">100 %</output>
+              </div>
+              <input class="form-range" type="range" id="s-section-spacing" data-style="sectionSpacing" min="70" max="150" step="5" value="100" aria-describedby="section-spacing-help">
+              <div class="d-flex justify-content-between small text-muted">
+                <span>Compact</span>
+                <button class="btn btn-link btn-sm p-0" id="btn-reset-section-spacing" type="button">Réinitialiser</button>
+                <span>Aéré</span>
+              </div>
+              <div class="form-text" id="section-spacing-help">Réglez l’espace entre les rubriques et les éléments du CV, par pas de 5 %.</div>
+            </div>
+            <div class="col-12 cv-only-control">
               <label class="form-label" for="s-photo">Photo (CV)</label>
               <div class="input-group">
                 <input type="file" class="form-control" id="s-photo" accept="image/*">
@@ -988,8 +1019,8 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
         <span id="pdf-tools-hint" class="small ms-2">Le PDF reste fixe. Cliquez à l’endroit souhaité pour placer un bloc, puis vous pouvez le déplacer en le redimensionnant.</span>
       </div>
       <div class="preview-scroll">
-        <div class="doc" id="doc-cv" data-layout="classique"></div>
-        <div class="doc d-none" id="doc-lettre"></div>
+        <div class="doc" id="doc-cv" data-document="cv" data-layout="classique"></div>
+        <div class="doc d-none" id="doc-lettre" data-document="lettre"></div>
       </div>
     </div>
 
@@ -1022,8 +1053,15 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
   });
   const defaultStyle = () => ({
     font: "Arial, sans-serif", color: "#1f3a5f", bannerColor: "#1f3a5f",
-    sidebarStartColor: "#172b4d", layout: "barre", sectionOrder: "experiences-first"
+    sidebarStartColor: "#172b4d", layout: "barre", sectionOrder: "experiences-first",
+    sectionSpacing: 100, letterSpacing: 100
   });
+  const normalizeSectionSpacing = value => {
+    if (value === null || value === undefined || value === "") return 100;
+    const spacing = Number(value);
+    if (!Number.isFinite(spacing)) return 100;
+    return Math.min(150, Math.max(70, Math.round(spacing / 5) * 5));
+  };
   const defaultFitScale = () => ({ cv: 1, lettre: 1 });
 
   let state = { cv: emptyCV(), lettre: emptyLettre(), style: defaultStyle(), fitScale: defaultFitScale() };
@@ -1110,7 +1148,9 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
             layout: CV_LAYOUTS.includes(s.style?.layout) ? s.style.layout : defaultStyle().layout,
             sectionOrder: ["experiences-first", "formations-first"].includes(s.style?.sectionOrder)
               ? s.style.sectionOrder
-              : defaultStyle().sectionOrder
+              : defaultStyle().sectionOrder,
+            sectionSpacing: normalizeSectionSpacing(s.style?.sectionSpacing),
+            letterSpacing: normalizeSectionSpacing(s.style?.letterSpacing)
           },
           fitScale
         };
@@ -1260,6 +1300,26 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
     </div>`;
   }
 
+  function syncStylePanel() {
+    const isLetter = lastDocumentTab === "lettre";
+    const spacingKey = isLetter ? "letterSpacing" : "sectionSpacing";
+    const spacingLabel = $("s-section-spacing-label");
+    const spacingHelp = $("section-spacing-help");
+    const colorLabel = $("s-color-label");
+    document.querySelectorAll(".cv-only-control").forEach(control => control.classList.toggle("d-none", isLetter));
+    $("style-panel-title").textContent = isLetter ? "Mise en forme de la lettre" : "Mise en forme du CV";
+    colorLabel.textContent = isLetter ? "Couleur de l’objet" : "Titres et dates";
+    $("s-color").title = isLetter ? "Couleur de l’objet de la lettre" : "Couleur des titres et des dates";
+    spacingLabel.textContent = isLetter ? "Espacement des paragraphes" : "Espacement des rubriques";
+    spacingHelp.textContent = isLetter
+      ? "Réglez l’espace après les paragraphes et entre le destinataire et le corps de la lettre, par pas de 5 %."
+      : "Réglez l’espace entre les rubriques et les éléments du CV, par pas de 5 %.";
+    $("s-section-spacing").dataset.style = spacingKey;
+    $("s-section-spacing").value = String(state.style[spacingKey]);
+    $("s-section-spacing-value").value = `${state.style[spacingKey]} %`;
+    $("s-section-spacing-value").textContent = `${state.style[spacingKey]} %`;
+  }
+
   function applyStyle() {
     const accent = state.style.color;
     [$("doc-cv"), $("doc-lettre")].forEach(d => {
@@ -1272,8 +1332,11 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
       d.style.fontFamily = state.style.font;
     });
     $("doc-cv").dataset.layout = state.style.layout;
+    $("doc-cv").style.setProperty("--cv-spacing", String(state.style.sectionSpacing / 100));
+    $("doc-lettre").style.setProperty("--letter-spacing", String(state.style.letterSpacing / 100));
     $("banner-color-control").classList.toggle("d-none", !["bandeau", "barre", "degrade"].includes(state.style.layout));
     $("sidebar-start-color-control").classList.toggle("d-none", state.style.layout !== "barre");
+    syncStylePanel();
   }
 
   function applyDocumentFontScale(doc, scale) {
@@ -1295,6 +1358,8 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
     measure.removeAttribute("id");
     measure.classList.remove("d-none", "imported", "pdf");
     measure.style.cssText = "position:absolute;left:-10000px;top:0;box-shadow:none;visibility:hidden";
+    measure.style.setProperty("--cv-spacing", String(state.style.sectionSpacing / 100));
+    measure.style.setProperty("--letter-spacing", String(state.style.letterSpacing / 100));
     measure.style.setProperty("box-sizing", "border-box", "important");
     measure.style.setProperty("width", "210mm", "important");
     measure.style.setProperty("max-width", "none", "important");
@@ -1315,7 +1380,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
       const side = measure.querySelector(".side");
       if (side) side.style.cssText += `;box-sizing:border-box;width:270px;height:auto;min-height:${A4_PAGE_HEIGHT}px;flex:0 0 270px;overflow:visible;padding:42px 25px 34px`;
       const sideHead = measure.querySelector(".side-head");
-      if (sideHead) sideHead.style.marginBottom = "36px";
+      if (sideHead) sideHead.style.marginBottom = "calc(36px * var(--cv-spacing, 1))";
       const photo = measure.querySelector(".side .photo");
       if (photo) photo.style.cssText += ";width:138px;height:138px";
       const main = measure.querySelector(".main");
@@ -1403,6 +1468,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
     $("pane-aide").classList.toggle("d-none", tab !== "aide");
     $("doc-cv").classList.toggle("d-none", tab !== "cv");
     $("doc-lettre").classList.toggle("d-none", tab !== "lettre");
+    syncStylePanel();
     checkOverflow();
   }
 
@@ -1424,12 +1490,23 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
       setPath(t.dataset.path, t.value);
       update();
     } else if (t.dataset.style) {
-      state.style[t.dataset.style] = t.value;
+      state.style[t.dataset.style] = ["sectionSpacing", "letterSpacing"].includes(t.dataset.style)
+        ? normalizeSectionSpacing(t.value)
+        : t.value;
       update();
     }
   });
   document.addEventListener("change", e => {
-    if (e.target.dataset.style) { state.style[e.target.dataset.style] = e.target.value; update(); }
+    if (e.target.dataset.style) {
+      state.style[e.target.dataset.style] = ["sectionSpacing", "letterSpacing"].includes(e.target.dataset.style)
+        ? normalizeSectionSpacing(e.target.value)
+        : e.target.value;
+      update();
+    }
+  });
+  $("btn-reset-section-spacing").addEventListener("click", () => {
+    state.style[lastDocumentTab === "lettre" ? "letterSpacing" : "sectionSpacing"] = 100;
+    update();
   });
 
   document.addEventListener("click", e => {
