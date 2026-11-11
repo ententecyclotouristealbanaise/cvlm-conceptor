@@ -703,6 +703,18 @@
               <label class="form-label" id="s-color-label" for="s-color">Titres et dates</label>
               <input type="color" class="form-control form-control-color" id="s-color" data-style="color" title="Couleur des titres et des dates">
             </div>
+            <div class="col-12">
+              <div class="d-flex align-items-center justify-content-between gap-2">
+                <label class="form-label mb-0" for="btn-increase-font">Taille du texte</label>
+                <output class="small fw-semibold" id="font-scale-value">100 %</output>
+              </div>
+              <div class="d-flex align-items-center gap-2 mt-2">
+                <button class="btn btn-outline-secondary btn-sm" id="btn-decrease-font" type="button" aria-label="Réduire la police de 5 %">A−</button>
+                <button class="btn btn-outline-secondary btn-sm" id="btn-increase-font" type="button" aria-label="Agrandir la police de 5 %">A+</button>
+                <button class="btn btn-link btn-sm ms-auto" id="btn-reset-font-control" type="button">Rétablir à 100 %</button>
+              </div>
+              <div class="form-text">Ajustez la taille du texte du document par pas de 5 %.</div>
+            </div>
             <div class="col-6 d-none cv-only-control" id="banner-color-control">
               <label class="form-label" for="s-banner-color">Couleur du bandeau</label>
               <input type="color" class="form-control form-control-color" id="s-banner-color" data-style="bannerColor" title="Couleur indépendante du bandeau">
@@ -1093,6 +1105,7 @@ Si je demande une correction ou une version plus courte pendant la discussion, r
   const KEY = "cv-lettre-app-v1";
   const A4_PAGE_HEIGHT = 1122.5;
   const MIN_FONT_SCALE = 0.75;
+  const MAX_FONT_SCALE = 1.5;
   const FONT_SCALE_STEP = 0.05;
   const CV_LAYOUTS = ["classique", "bandeau", "barre", "degrade"];
   let importedEl = null;   // mise en page importée affichée dans l'aperçu (null = modèle)
@@ -1197,7 +1210,7 @@ Si je demande une correction ou une version plus courte pendant la discussion, r
         const fitScale = { ...defaultFitScale(), ...s.fitScale };
         for (const tab of ["cv", "lettre"]) {
           const scale = Number(fitScale[tab]);
-          fitScale[tab] = Number.isFinite(scale) ? Math.min(1, Math.max(MIN_FONT_SCALE, scale)) : 1;
+          fitScale[tab] = Number.isFinite(scale) ? Math.min(MAX_FONT_SCALE, Math.max(MIN_FONT_SCALE, scale)) : 1;
         }
         state = {
           cv,
@@ -1462,11 +1475,12 @@ Si je demande une correction ou une version plus courte pendant la discussion, r
     const isCV = visible.id === "doc-cv";
     const scaleKey = isCV ? "cv" : "lettre";
     const scale = state.fitScale[scaleKey];
-    const hasReducedFont = scale < 1;
+    const hasAdjustedFont = scale !== 1;
     const reduceButton = $("btn-reduce-font");
     const resetButton = $("btn-reset-font");
     if (isCV && importedEl) {
       warn.classList.add("d-none");
+      syncFontControls();
       return;
     }
 
@@ -1475,16 +1489,29 @@ Si je demande une correction ou une version plus courte pendant la discussion, r
     const tooLong = height > A4_PAGE_HEIGHT + 0.5;
     $("page-warning-text").textContent = tooLong
       ? `Votre ${isCV ? "CV" : "lettre"} nécessiterait environ ${pages} pages A4 à l’impression. ${scale <= MIN_FONT_SCALE ? "Réduisez le contenu ou prévoyez une deuxième page." : "Vous pouvez réduire la police ou raccourcir le contenu."}`
-      : hasReducedFont
+      : scale < 1
         ? `La police a été réduite à ${Math.round(scale * 100)} % pour tenir sur une page A4 à l’impression.`
-        : "";
-    warn.classList.toggle("d-none", !tooLong && !hasReducedFont);
+        : scale > 1
+          ? `La police a été agrandie à ${Math.round(scale * 100)} %. Vérifiez que le document tient toujours sur une page A4.`
+          : "";
+    warn.classList.toggle("d-none", !tooLong && !hasAdjustedFont);
     warn.classList.toggle("alert-warning", tooLong);
-    warn.classList.toggle("alert-success", !tooLong && hasReducedFont);
+    warn.classList.toggle("alert-success", !tooLong && hasAdjustedFont);
     warn.classList.add("d-flex");
     reduceButton.classList.toggle("d-none", !tooLong);
     reduceButton.disabled = scale <= MIN_FONT_SCALE;
-    resetButton.classList.toggle("d-none", !hasReducedFont);
+    resetButton.classList.toggle("d-none", !hasAdjustedFont);
+    syncFontControls();
+  }
+
+  function syncFontControls() {
+    const tab = $("doc-cv").classList.contains("d-none") ? "lettre" : "cv";
+    const scale = state.fitScale[tab];
+    const isImportedCV = tab === "cv" && Boolean(importedEl);
+    $("font-scale-value").textContent = `${Math.round(scale * 100)} %`;
+    $("btn-decrease-font").disabled = isImportedCV || scale <= MIN_FONT_SCALE;
+    $("btn-increase-font").disabled = isImportedCV || scale >= MAX_FONT_SCALE;
+    $("btn-reset-font-control").disabled = isImportedCV || scale === 1;
   }
 
   function update() {
@@ -1499,14 +1526,18 @@ Si je demande une correction ou une version plus courte pendant la discussion, r
 
   function changeFontScale(amount) {
     const scaleKey = $("doc-cv").classList.contains("d-none") ? "lettre" : "cv";
-    state.fitScale[scaleKey] = Math.min(1, Math.max(MIN_FONT_SCALE, Math.round((state.fitScale[scaleKey] + amount) * 100) / 100));
+    state.fitScale[scaleKey] = Math.min(MAX_FONT_SCALE, Math.max(MIN_FONT_SCALE, Math.round((state.fitScale[scaleKey] + amount) * 100) / 100));
+    update();
+  }
+  $("btn-decrease-font").addEventListener("click", () => changeFontScale(-FONT_SCALE_STEP));
+  $("btn-increase-font").addEventListener("click", () => changeFontScale(FONT_SCALE_STEP));
+  function resetFontScale() {
+    state.fitScale[$("doc-cv").classList.contains("d-none") ? "lettre" : "cv"] = 1;
     update();
   }
   $("btn-reduce-font").addEventListener("click", () => changeFontScale(-FONT_SCALE_STEP));
-  $("btn-reset-font").addEventListener("click", () => {
-    state.fitScale[$("doc-cv").classList.contains("d-none") ? "lettre" : "cv"] = 1;
-    update();
-  });
+  $("btn-reset-font").addEventListener("click", resetFontScale);
+  $("btn-reset-font-control").addEventListener("click", resetFontScale);
 
   // ---------- Onglets ----------
   function setTab(tab) {
@@ -1530,6 +1561,7 @@ Si je demande une correction ou une version plus courte pendant la discussion, r
     $("doc-cv").classList.toggle("d-none", tab !== "cv");
     $("doc-lettre").classList.toggle("d-none", tab !== "lettre");
     syncStylePanel();
+    syncFontControls();
     checkOverflow();
   }
 
