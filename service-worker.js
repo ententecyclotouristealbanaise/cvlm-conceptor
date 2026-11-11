@@ -1,4 +1,4 @@
-const CACHE_NAME = "cvlm-conceptor-v1";
+const CACHE_NAME = "cvlm-conceptor-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
