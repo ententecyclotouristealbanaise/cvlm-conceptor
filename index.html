@@ -379,7 +379,7 @@
     .doc[data-layout=bandeau] .hd { margin: -14mm -15mm 20px; padding: 14mm 15mm; }
     .doc[data-layout=degrade] .hd { margin: -14mm -15mm 20px; padding: 14mm 15mm; }
     .doc[data-layout=barre] { position: relative; box-sizing: border-box; width: 210mm; height: 297mm; min-height: 0; padding: 0; overflow: hidden; }
-    .doc[data-layout=barre] .wrap { position: absolute; top: 0; left: 0; display: flex; flex-direction: row; align-items: stretch; width: 794px; height: var(--print-content-height, auto); margin: 0; min-height: 0; transform: scale(var(--print-scale, 1)); transform-origin: top left; }
+    .doc[data-layout=barre] .wrap { position: absolute; top: 0; left: 0; display: flex; flex-direction: row; align-items: stretch; width: 100%; height: var(--print-content-height, auto); margin: 0; min-height: 0; transform: scale(var(--print-scale, 1)); transform-origin: top left; }
     .doc[data-layout=barre] .side { box-sizing: border-box; width: 270px; height: calc(1122.5px / var(--print-scale, 1)); flex: 0 0 270px; overflow: visible; padding: 42px 25px 34px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
     .doc[data-layout=barre] .side-head { margin-bottom: 36px; }
     .doc[data-layout=barre] .side .photo { width: 138px; height: 138px; }
@@ -388,6 +388,181 @@
     .pdf-page { box-shadow: none; margin: 0; page-break-after: always; }
     .pdf-page:last-child { page-break-after: auto; }
     @page { size: A4; margin: 0; }
+  }
+
+  :root {
+    --app-ink: #1d2b3f;
+    --app-muted: #65758b;
+    --app-line: #e4eaf2;
+    --app-accent: #315b91;
+    --app-accent-soft: #edf4fc;
+  }
+  body {
+    color: var(--app-ink);
+    background:
+      radial-gradient(ellipse at 4% 0%, rgba(196, 216, 245, .44), transparent 34rem),
+      radial-gradient(ellipse at 100% 20%, rgba(219, 228, 245, .48), transparent 38rem),
+      #f4f7fb;
+  }
+  .app-header {
+    background: linear-gradient(112deg, #14253d 0%, #1d3556 58%, #294b75 100%) !important;
+    border-bottom: 1px solid rgba(255,255,255,.14);
+    box-shadow: 0 8px 26px rgba(17, 35, 60, .2);
+  }
+  .app-header .container-fluid { max-width: 1680px; }
+  .brand-mark {
+    width: 46px;
+    height: 46px;
+    border-radius: 15px;
+    box-shadow: 0 5px 16px rgba(0,0,0,.16), inset 0 1px rgba(255,255,255,.75);
+  }
+  .brand-title { letter-spacing: .035em; }
+  .header-actions .btn { min-height: 40px; }
+  .header-actions #btn-demo { background: rgba(255,255,255,.96); color: #1c3556; }
+  .header-actions #btn-clear { border-color: rgba(255,255,255,.34); }
+  .header-actions #btn-print { background: #4a83c5; border-color: #4a83c5; box-shadow: 0 4px 12px rgba(11, 24, 44, .22); }
+  .container-fluid.py-3 {
+    max-width: 1680px;
+    padding-top: 1.5rem !important;
+    padding-bottom: 2rem !important;
+  }
+  #editor-column > .card {
+    overflow: hidden;
+    border: 1px solid var(--app-line);
+    border-radius: 1.05rem;
+    background: rgba(255,255,255,.96);
+    box-shadow: 0 7px 22px rgba(27, 46, 73, .055) !important;
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+  }
+  #editor-column > .card:hover {
+    border-color: #d7e1ef;
+    box-shadow: 0 10px 28px rgba(27, 46, 73, .085) !important;
+    transform: translateY(-1px);
+  }
+  #editor-column > .card > .card-body { padding: 1.15rem 1.25rem; }
+  .card-title-sm {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    margin-bottom: 1rem;
+    color: #364a64;
+    font-size: .73rem;
+    font-weight: 750;
+    letter-spacing: .095em;
+  }
+  .card-title-sm::before {
+    width: 4px;
+    height: 17px;
+    flex: 0 0 4px;
+    border-radius: 5px;
+    background: linear-gradient(180deg, #6ea2dc, #315b91);
+    content: "";
+  }
+  #editor-column .form-label {
+    margin-bottom: .42rem;
+    color: #40516a;
+    font-size: .84rem;
+    font-weight: 650;
+  }
+  #editor-column .form-text {
+    color: var(--app-muted);
+    font-size: .78rem;
+    line-height: 1.55;
+  }
+  #editor-column .form-control,
+  #editor-column .form-select {
+    min-height: 42px;
+    border-color: #dbe3ed;
+    background-color: #fff;
+    color: #27374c;
+    box-shadow: 0 1px 2px rgba(25, 42, 64, .025);
+  }
+  #editor-column textarea.form-control { min-height: auto; }
+  #editor-column .form-control:focus,
+  #editor-column .form-select:focus {
+    border-color: #82a7d2;
+    box-shadow: 0 0 0 .2rem rgba(66, 117, 177, .13);
+  }
+  #editor-column .form-control-color {
+    min-height: 42px;
+    padding: .3rem;
+    border-color: #dbe3ed;
+    background: #fff;
+  }
+  #editor-column .file-picker .btn {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: .7rem;
+    font-weight: 600;
+  }
+  #editor-column #exps > div,
+  #editor-column #formations > div {
+    border-color: #e2e8f0 !important;
+    border-radius: .85rem !important;
+    background: #f8fafd !important;
+    transition: border-color .18s ease, background .18s ease;
+  }
+  #editor-column #exps > div:focus-within,
+  #editor-column #formations > div:focus-within {
+    border-color: #b7cbe3 !important;
+    background: #fff !important;
+  }
+  .workspace-tabs {
+    gap: .35rem;
+    padding: .4rem;
+    border-color: #e1e8f1;
+    border-radius: .95rem;
+    box-shadow: 0 4px 14px rgba(27,46,73,.045);
+  }
+  .workspace-tabs .nav-link {
+    min-height: 44px;
+    padding-inline: 1rem;
+    color: #607087;
+  }
+  .workspace-tabs .nav-link.active {
+    background: linear-gradient(135deg, #294a72, #365f8f);
+    box-shadow: 0 4px 10px rgba(34,66,104,.2);
+  }
+  .preview-column { min-width: 0; }
+  .preview-scroll { padding: 12px; }
+  .preview-column .doc {
+    border: 1px solid rgba(208, 218, 231, .85);
+    border-radius: .25rem;
+    box-shadow: 0 16px 40px rgba(28, 45, 70, .12);
+  }
+  #warning, #import-tools, #pdf-tools {
+    border: 1px solid #dfe8f3;
+    border-radius: .85rem;
+    box-shadow: 0 4px 12px rgba(27,46,73,.04);
+  }
+  .accordion-item {
+    border-color: var(--app-line);
+    background: rgba(255,255,255,.86);
+  }
+  .accordion-button { color: #344860; font-weight: 600; }
+  .accordion-button:not(.collapsed) {
+    color: #254c7b;
+    background: var(--app-accent-soft);
+    box-shadow: inset 3px 0 #4b7fb7;
+  }
+  .accordion-button:focus { box-shadow: 0 0 0 .2rem rgba(66,117,177,.13); }
+  .btn:focus-visible, .nav-link:focus-visible {
+    outline: 3px solid rgba(89, 143, 202, .45);
+    outline-offset: 2px;
+  }
+  @media (max-width: 575.98px) {
+    .container-fluid.py-3 { padding-top: 1rem !important; }
+    #editor-column > .card > .card-body { padding: 1rem; }
+    .preview-scroll { padding: 4px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+  }
+  @media print {
+    .container-fluid.py-3 { padding-top: 0 !important; padding-bottom: 0 !important; }
+    .preview-scroll { padding: 0 !important; }
+    .preview-column .doc { border: 0; border-radius: 0; box-shadow: none; }
   }
 </style>
 </head>
@@ -428,38 +603,62 @@
 </noscript>
 
 <div class="container-fluid py-3">
+  <ul class="nav nav-tabs mb-3 workspace-tabs no-print" id="tabs">
+    <li class="nav-item"><button class="nav-link active" id="tab-cv" data-tab="cv" type="button">CV</button></li>
+    <li class="nav-item"><button class="nav-link" id="tab-lettre" data-tab="lettre" type="button">Lettre de motivation</button></li>
+    <li class="nav-item"><button class="nav-link" id="tab-aide" data-tab="aide" type="button">Tutoriel &amp; FAQ</button></li>
+  </ul>
+
   <div class="row g-4">
 
     <!-- ===== Colonne de saisie ===== -->
     <div class="col-lg-5 no-print" id="editor-column">
 
-      <div class="card shadow-sm mb-3">
-        <div class="card-body">
-          <div class="card-title-sm">Importer un CV existant</div>
-          <div class="file-picker">
-            <input type="file" class="visually-hidden" id="s-import" accept=".pdf,.docx,.doc">
-            <label class="btn btn-outline-primary" for="s-import"><i class="bi bi-folder2-open me-1" aria-hidden="true"></i>Choisir un fichier</label>
-            <span class="file-picker-hint" aria-hidden="true">PDF ou document Word</span>
+      <div id="cv-top-actions">
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
+            <div class="card-title-sm">Importer un CV existant</div>
+            <div class="file-picker">
+              <input type="file" class="visually-hidden" id="s-import" accept=".pdf,.docx,.doc">
+              <label class="btn btn-outline-primary" for="s-import"><i class="bi bi-folder2-open me-1" aria-hidden="true"></i>Choisir un fichier</label>
+              <span class="file-picker-hint" aria-hidden="true">PDF ou document Word</span>
+            </div>
+            <div class="form-text">PDF, Word (.docx) ou .doc. Le contenu est repris dans le modèle choisi; vous pouvez aussi consulter la mise en page d'origine.</div>
+            <div id="import-note" class="alert alert-info d-none small mt-2 mb-0" aria-live="polite"></div>
           </div>
-          <div class="form-text">PDF, Word (.docx) ou .doc. Le contenu est repris dans le modèle choisi; vous pouvez aussi consulter la mise en page d'origine.</div>
-          <div id="import-note" class="alert alert-info d-none small mt-2 mb-0" aria-live="polite"></div>
+        </div>
+      </div>
+      <div id="letter-top-actions" class="d-none"></div>
+
+      <div class="card shadow-sm mb-3 no-print" id="start-examples">
+        <div class="card-body">
+          <div class="card-title-sm">Démarrer avec un exemple</div>
+          <div id="start-example-cv">
+            <div class="input-group">
+              <select id="cv-example" class="form-select" aria-label="Exemple de CV">
+                <option value="communication">Communication</option>
+                <option value="administratif">Assistant administratif</option>
+                <option value="vente">Vente</option>
+              </select>
+              <button class="btn btn-outline-primary" id="btn-load-cv-example" type="button">Charger</button>
+            </div>
+            <div class="form-text">Les champs du CV actuel seront remplacés par cet exemple modifiable.</div>
+          </div>
+          <div id="start-example-lettre" class="d-none">
+            <div class="input-group">
+              <select id="letter-example" class="form-select" aria-label="Exemple de lettre de motivation">
+                <option value="communication">Chargée de communication</option>
+                <option value="administratif">Assistant administratif</option>
+                <option value="vente">Conseiller de vente</option>
+              </select>
+              <button class="btn btn-outline-primary" id="btn-load-letter-example" type="button">Charger</button>
+            </div>
+            <div class="form-text">Les champs de la lettre actuelle seront remplacés par cet exemple modifiable.</div>
+          </div>
         </div>
       </div>
 
-      <div class="card shadow-sm mb-3">
-        <div class="card-body">
-          <div class="card-title-sm">Importer une lettre de motivation</div>
-          <div class="file-picker">
-            <input type="file" class="visually-hidden" id="s-import-letter" accept=".pdf,.docx,.doc,.txt">
-            <label class="btn btn-outline-primary" for="s-import-letter"><i class="bi bi-folder2-open me-1" aria-hidden="true"></i>Choisir un fichier</label>
-            <span class="file-picker-hint" aria-hidden="true">PDF, Word ou texte</span>
-          </div>
-          <div class="form-text">PDF, Word (.docx), .doc ou texte (.txt). Le texte est analysé pour remplir les champs de la lettre; vérifiez les rubriques et corrigez-les si nécessaire.</div>
-          <div id="letter-import-note" class="alert alert-info d-none small mt-2 mb-0" aria-live="polite"></div>
-        </div>
-      </div>
-
-      <div class="card shadow-sm mb-3">
+      <div class="card shadow-sm mb-3" id="style-panel">
         <div class="card-body">
           <div class="card-title-sm">Mise en forme</div>
           <div class="row g-2">
@@ -498,11 +697,14 @@
                 <option value="classique">Classique</option>
                 <option value="bandeau">Bandeau coloré</option>
                 <option value="barre">Barre latérale colorée</option>
-                <option value="minimal">Minimal</option>
-                <option value="editorial">Éditorial</option>
-                <option value="compact">Compact</option>
-                <option value="encadre">Encadré</option>
                 <option value="degrade">Dégradé</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="s-section-order">Ordre des rubriques</label>
+              <select class="form-select" id="s-section-order" data-style="sectionOrder">
+                <option value="experiences-first">Expériences, puis formations</option>
+                <option value="formations-first">Formations, puis expériences</option>
               </select>
             </div>
             <div class="col-12">
@@ -533,27 +735,11 @@
         </div>
       </div>
 
-      <ul class="nav nav-tabs mb-3" id="tabs">
-        <li class="nav-item"><button class="nav-link active" id="tab-cv" data-tab="cv" type="button">CV</button></li>
-        <li class="nav-item"><button class="nav-link" id="tab-lettre" data-tab="lettre" type="button">Lettre de motivation</button></li>
-        <li class="nav-item"><button class="nav-link" id="tab-aide" data-tab="aide" type="button">Tutoriel &amp; FAQ</button></li>
-      </ul>
-
       <!-- Formulaire CV -->
       <div id="pane-cv">
         <div class="card shadow-sm mb-3">
           <div class="card-body">
-            <div class="card-title-sm">Démarrer avec un exemple de CV</div>
-            <div class="input-group">
-              <select id="cv-example" class="form-select" aria-label="Exemple de CV">
-                <option value="communication">Communication</option>
-                <option value="administratif">Assistant administratif</option>
-                <option value="vente">Vente</option>
-              </select>
-              <button class="btn btn-outline-primary" id="btn-load-cv-example" type="button">Charger</button>
-            </div>
-            <div class="form-text">Les champs du CV actuel seront remplacés par cet exemple modifiable.</div>
-            <a class="small" href="https://gemini.google.com/app" target="_blank" rel="noopener noreferrer">Besoin d’idées ? Ouvrir Gemini</a>
+            <a class="small" href="https://gemini.google.com/app" target="_blank" rel="noopener noreferrer">Besoin d’aide à la rédaction ? Ouvrir Gemini</a>
             <details class="mt-2">
               <summary class="small">Consigne Gemini pour créer ou améliorer un CV</summary>
               <textarea class="form-control form-control-sm mt-2" id="gemini-cv-prompt" rows="8" readonly>Agis comme un conseiller expert en recrutement et en rédaction de CV en français. Aide-moi à créer ou améliorer mon CV pour le poste visé.
@@ -644,16 +830,18 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
       <div id="pane-lettre" class="d-none">
         <div class="card shadow-sm mb-3">
           <div class="card-body">
-            <div class="card-title-sm">Démarrer avec un exemple de lettre</div>
-            <div class="input-group">
-              <select id="letter-example" class="form-select" aria-label="Exemple de lettre de motivation">
-                <option value="communication">Chargée de communication</option>
-                <option value="administratif">Assistant administratif</option>
-                <option value="vente">Conseiller de vente</option>
-              </select>
-              <button class="btn btn-outline-primary" id="btn-load-letter-example" type="button">Charger</button>
+            <div class="card-title-sm">Importer une lettre de motivation</div>
+            <div class="file-picker">
+              <input type="file" class="visually-hidden" id="s-import-letter" accept=".pdf,.docx,.doc,.txt">
+              <label class="btn btn-outline-primary" for="s-import-letter"><i class="bi bi-folder2-open me-1" aria-hidden="true"></i>Choisir un fichier</label>
+              <span class="file-picker-hint" aria-hidden="true">PDF, Word ou texte</span>
             </div>
-            <div class="form-text">Les champs de la lettre actuelle seront remplacés par cet exemple modifiable.</div>
+            <div class="form-text">PDF, Word (.docx), .doc ou texte (.txt). Le texte est analysé pour remplir les champs de la lettre; vérifiez les rubriques et corrigez-les si nécessaire.</div>
+            <div id="letter-import-note" class="alert alert-info d-none small mt-2 mb-0" aria-live="polite"></div>
+          </div>
+        </div>
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
             <a class="small" href="https://gemini.google.com/app" target="_blank" rel="noopener noreferrer">Besoin d’aide à la rédaction ? Ouvrir Gemini</a>
             <details class="mt-2">
               <summary class="small">Consigne Gemini pour rédiger une lettre</summary>
@@ -786,7 +974,11 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
 
     <!-- ===== Aperçu ===== -->
     <div class="col-lg-7 preview-column">
-      <div id="warning" class="alert alert-warning no-print d-none" role="alert" aria-live="polite"></div>
+      <div id="warning" class="alert alert-warning no-print d-none align-items-center flex-wrap gap-2" role="status" aria-live="polite">
+        <span id="page-warning-text" class="flex-grow-1"></span>
+        <button class="btn btn-outline-warning btn-sm" id="btn-reduce-font" type="button">Réduire la police de 5 %</button>
+        <button class="btn btn-link btn-sm d-none" id="btn-reset-font" type="button">Rétablir la taille initiale</button>
+      </div>
       <div id="import-tools" class="alert alert-info no-print d-none py-2" role="region" aria-label="Affichage du document importé">
         <button class="btn btn-outline-primary btn-sm" id="btn-toggle-import-view" type="button">Voir la mise en page d'origine</button>
         <span id="import-view-hint" class="small ms-2">Le CV importé est présenté avec le modèle choisi dans l'application.</span>
@@ -808,6 +1000,10 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
 <script>
   const $ = id => document.getElementById(id);
   const KEY = "cv-lettre-app-v1";
+  const A4_PAGE_HEIGHT = 1122.5;
+  const MIN_FONT_SCALE = 0.75;
+  const FONT_SCALE_STEP = 0.05;
+  const CV_LAYOUTS = ["classique", "bandeau", "barre", "degrade"];
   let importedEl = null;   // mise en page importée affichée dans l'aperçu (null = modèle)
   let importedSourceEl = null;
   let importedSourceKind = null;
@@ -826,10 +1022,11 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
   });
   const defaultStyle = () => ({
     font: "Arial, sans-serif", color: "#1f3a5f", bannerColor: "#1f3a5f",
-    sidebarStartColor: "#172b4d", layout: "classique"
+    sidebarStartColor: "#172b4d", layout: "barre", sectionOrder: "experiences-first"
   });
+  const defaultFitScale = () => ({ cv: 1, lettre: 1 });
 
-  let state = { cv: emptyCV(), lettre: emptyLettre(), style: defaultStyle() };
+  let state = { cv: emptyCV(), lettre: emptyLettre(), style: defaultStyle(), fitScale: defaultFitScale() };
 
   // ---------- Utilitaires ----------
   const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -876,6 +1073,12 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
       return { item, index, date: latest };
     }).sort((a, b) => b.date - a.date || a.index - b.index);
   }
+  function newestFirstFormations(items) {
+    return items.map((item, index) => {
+      const years = String(item.annee || "").match(/\b(?:19|20)\d{2}\b/g) || [];
+      return { item, index, year: years.length ? Math.max(...years.map(Number)) : 0 };
+    }).sort((a, b) => b.year - a.year || a.index - b.index);
+  }
 
   // ---------- Sauvegarde locale ----------
   function save() {
@@ -893,7 +1096,24 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
             cv.centresInteret = otherItems.join(", ");
           }
         }
-        state = { cv, lettre: { ...emptyLettre(), ...s.lettre }, style: { ...state.style, ...s.style } };
+        const fitScale = { ...defaultFitScale(), ...s.fitScale };
+        for (const tab of ["cv", "lettre"]) {
+          const scale = Number(fitScale[tab]);
+          fitScale[tab] = Number.isFinite(scale) ? Math.min(1, Math.max(MIN_FONT_SCALE, scale)) : 1;
+        }
+        state = {
+          cv,
+          lettre: { ...emptyLettre(), ...s.lettre },
+          style: {
+            ...state.style,
+            ...s.style,
+            layout: CV_LAYOUTS.includes(s.style?.layout) ? s.style.layout : defaultStyle().layout,
+            sectionOrder: ["experiences-first", "formations-first"].includes(s.style?.sectionOrder)
+              ? s.style.sectionOrder
+              : defaultStyle().sectionOrder
+          },
+          fitScale
+        };
       }
     } catch (e) { /* données illisibles : on repart de zéro */ }
   }
@@ -918,7 +1138,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
         <button class="btn btn-sm btn-outline-danger mt-2" data-del="exps" data-idx="${i}" type="button"><i class="bi bi-trash"></i> Supprimer</button>
       </div>`).join("");
 
-    $("formations").innerHTML = state.cv.formations.map((x, i) => `
+    $("formations").innerHTML = newestFirstFormations(state.cv.formations).map(({ item: x, index: i }) => `
       <div class="border rounded p-2 mb-2 bg-white">
         <div class="row g-2">
           <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Diplôme" aria-label="Diplôme" data-list="formations" data-idx="${i}" data-key="diplome" value="${esc(x.diplome)}"></div>
@@ -963,7 +1183,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
       </div>`;
     }).join("");
 
-    const formations = c.formations.filter(x => x.diplome || x.ecole || x.annee).map(x => `
+    const formations = newestFirstFormations(c.formations).map(({ item: x }) => x).filter(x => x.diplome || x.ecole || x.annee).map(x => `
       <div class="item">
         <div class="ih"><b>${esc(x.diplome)}</b><span class="meta">${esc(x.annee)}</span></div>
         <div class="org">${esc(x.ecole)}</div>
@@ -974,6 +1194,11 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
     const permit = c.permis ? `<div class="item">${esc(c.permis)}</div>` : "";
     const interests = c.centresInteret ? `<div class="item">${esc(c.centresInteret)}</div>` : "";
     const profil = c.profil ? `<p class="profil">${esc(c.profil)}</p>` : "";
+    const experienceSection = sec("Expériences", exps);
+    const formationSection = sec("Formation", formations);
+    const careerSections = state.style.sectionOrder === "formations-first"
+      ? `${formationSection}${experienceSection}`
+      : `${experienceSection}${formationSection}`;
 
     if (state.style.layout === "barre") {
       return `<div class="wrap">
@@ -991,8 +1216,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
         </aside>
         <main class="main">
           ${sec("Profil", profil)}
-          ${sec("Expériences", exps)}
-          ${sec("Formation", formations)}
+          ${careerSections}
         </main>
       </div>`;
     }
@@ -1007,8 +1231,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
         </div>
       </header>
       ${sec("Profil", profil)}
-      ${sec("Expériences", exps)}
-      ${sec("Formation", formations)}
+      ${careerSections}
       ${sec("Compétences", skills ? `<div>${skills}</div>` : "")}
       ${sec("Langues", languages)}
       ${sec("Permis", permit)}
@@ -1053,6 +1276,57 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
     $("sidebar-start-color-control").classList.toggle("d-none", state.style.layout !== "barre");
   }
 
+  function applyDocumentFontScale(doc, scale) {
+    doc.querySelectorAll("[data-fit-original-font-size]").forEach(el => {
+      el.style.fontSize = el.dataset.fitOriginalFontSize;
+      delete el.dataset.fitOriginalFontSize;
+    });
+    if (scale === 1) return;
+    doc.querySelectorAll("*").forEach(el => {
+      const fontSize = parseFloat(getComputedStyle(el).fontSize);
+      if (!Number.isFinite(fontSize) || fontSize <= 0) return;
+      el.dataset.fitOriginalFontSize = `${fontSize}px`;
+      el.style.fontSize = `${fontSize * scale}px`;
+    });
+  }
+
+  function measureDocumentHeight(doc) {
+    const measure = doc.cloneNode(true);
+    measure.removeAttribute("id");
+    measure.classList.remove("d-none", "imported", "pdf");
+    measure.style.cssText = "position:absolute;left:-10000px;top:0;box-shadow:none;visibility:hidden";
+    measure.style.setProperty("box-sizing", "border-box", "important");
+    measure.style.setProperty("width", "210mm", "important");
+    measure.style.setProperty("max-width", "none", "important");
+    measure.style.setProperty("height", "auto", "important");
+    measure.style.setProperty("min-height", `${A4_PAGE_HEIGHT}px`, "important");
+    measure.style.setProperty("margin", "0", "important");
+    measure.style.setProperty("padding", "14mm 15mm", "important");
+    measure.style.setProperty("overflow", "visible", "important");
+    const layout = measure.dataset.layout;
+    if (layout === "bandeau" || layout === "degrade") {
+      const header = measure.querySelector(".hd");
+      if (header) header.style.cssText += ";display:flex;flex-direction:row;align-items:center;margin:-14mm -15mm 20px;padding:14mm 15mm";
+    }
+    if (layout === "barre") {
+      measure.style.setProperty("padding", "0", "important");
+      const wrap = measure.querySelector(".wrap");
+      if (wrap) wrap.style.cssText += `;position:static;display:flex;flex-direction:row;align-items:stretch;width:794px;height:auto;min-height:${A4_PAGE_HEIGHT}px;margin:0;transform:none`;
+      const side = measure.querySelector(".side");
+      if (side) side.style.cssText += `;box-sizing:border-box;width:270px;height:auto;min-height:${A4_PAGE_HEIGHT}px;flex:0 0 270px;overflow:visible;padding:42px 25px 34px`;
+      const sideHead = measure.querySelector(".side-head");
+      if (sideHead) sideHead.style.marginBottom = "36px";
+      const photo = measure.querySelector(".side .photo");
+      if (photo) photo.style.cssText += ";width:138px;height:138px";
+      const main = measure.querySelector(".main");
+      if (main) main.style.cssText += ";box-sizing:border-box;flex:1 1 auto;min-width:0;height:auto;min-height:0;padding:48px 39px 40px";
+    }
+    document.body.appendChild(measure);
+    const height = measure.getBoundingClientRect().height;
+    measure.remove();
+    return height;
+  }
+
   function checkOverflow() {
     if ($("pane-aide").classList.contains("d-none") === false) {
       $("warning").classList.add("d-none");
@@ -1060,15 +1334,32 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
     }
     const visible = $("doc-cv").classList.contains("d-none") ? $("doc-lettre") : $("doc-cv");
     const warn = $("warning");
-    const tooLong = !importedEl && visible.offsetHeight > 1125;   // une mise en page importée a sa propre pagination
-    if (tooLong) {
-      warn.textContent = visible.id === "doc-cv"
-        ? "Votre CV dépasse une page A4. Pensez à le raccourcir, ou à réduire le nombre de lignes par expérience."
-        : "Votre lettre dépasse une page A4. Pensez à la raccourcir.";
-      warn.classList.remove("d-none");
-    } else {
+    const isCV = visible.id === "doc-cv";
+    const scaleKey = isCV ? "cv" : "lettre";
+    const scale = state.fitScale[scaleKey];
+    const hasReducedFont = scale < 1;
+    const reduceButton = $("btn-reduce-font");
+    const resetButton = $("btn-reset-font");
+    if (isCV && importedEl) {
       warn.classList.add("d-none");
+      return;
     }
+
+    const height = measureDocumentHeight(visible);
+    const pages = Math.max(1, Math.ceil(height / A4_PAGE_HEIGHT));
+    const tooLong = height > A4_PAGE_HEIGHT + 0.5;
+    $("page-warning-text").textContent = tooLong
+      ? `Votre ${isCV ? "CV" : "lettre"} nécessiterait environ ${pages} pages A4 à l’impression. ${scale <= MIN_FONT_SCALE ? "Réduisez le contenu ou prévoyez une deuxième page." : "Vous pouvez réduire la police ou raccourcir le contenu."}`
+      : hasReducedFont
+        ? `La police a été réduite à ${Math.round(scale * 100)} % pour tenir sur une page A4 à l’impression.`
+        : "";
+    warn.classList.toggle("d-none", !tooLong && !hasReducedFont);
+    warn.classList.toggle("alert-warning", tooLong);
+    warn.classList.toggle("alert-success", !tooLong && hasReducedFont);
+    warn.classList.add("d-flex");
+    reduceButton.classList.toggle("d-none", !tooLong);
+    reduceButton.disabled = scale <= MIN_FONT_SCALE;
+    resetButton.classList.toggle("d-none", !hasReducedFont);
   }
 
   function update() {
@@ -1076,8 +1367,21 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
     applyStyle();
     if (!importedEl) $("doc-cv").innerHTML = cvHtml();
     $("doc-lettre").innerHTML = letterHtml();
+    if (!importedEl) applyDocumentFontScale($("doc-cv"), state.fitScale.cv);
+    applyDocumentFontScale($("doc-lettre"), state.fitScale.lettre);
     checkOverflow();
   }
+
+  function changeFontScale(amount) {
+    const scaleKey = $("doc-cv").classList.contains("d-none") ? "lettre" : "cv";
+    state.fitScale[scaleKey] = Math.min(1, Math.max(MIN_FONT_SCALE, Math.round((state.fitScale[scaleKey] + amount) * 100) / 100));
+    update();
+  }
+  $("btn-reduce-font").addEventListener("click", () => changeFontScale(-FONT_SCALE_STEP));
+  $("btn-reset-font").addEventListener("click", () => {
+    state.fitScale[$("doc-cv").classList.contains("d-none") ? "lettre" : "cv"] = 1;
+    update();
+  });
 
   // ---------- Onglets ----------
   function setTab(tab) {
@@ -1088,6 +1392,12 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
       b.setAttribute("aria-selected", String(active));
     });
     document.querySelector(".row.g-4").classList.toggle("help-mode", tab === "aide");
+    $("style-panel").classList.toggle("d-none", tab === "aide");
+    $("cv-top-actions").classList.toggle("d-none", tab !== "cv");
+    $("letter-top-actions").classList.toggle("d-none", tab !== "lettre");
+    $("start-examples").classList.toggle("d-none", tab === "aide");
+    $("start-example-cv").classList.toggle("d-none", tab !== "cv");
+    $("start-example-lettre").classList.toggle("d-none", tab !== "lettre");
     $("pane-cv").classList.toggle("d-none", tab !== "cv");
     $("pane-lettre").classList.toggle("d-none", tab !== "lettre");
     $("pane-aide").classList.toggle("d-none", tab !== "aide");
@@ -1095,6 +1405,12 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
     $("doc-lettre").classList.toggle("d-none", tab !== "lettre");
     checkOverflow();
   }
+
+  const cvGeminiPanel = $("gemini-cv-prompt").closest(".card");
+  $("cv-top-actions").appendChild(cvGeminiPanel);
+  const letterImportPanel = $("s-import-letter").closest(".card");
+  const letterGeminiPanel = $("gemini-letter-prompt").closest(".card");
+  $("letter-top-actions").append(letterImportPanel, letterGeminiPanel);
 
   // ---------- Événements ----------
   document.addEventListener("input", e => {
@@ -1238,7 +1554,8 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
         p4: "Je reste à votre disposition pour un entretien et vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.",
         formule: "", signature: "Marie Dupont"
       },
-      style: state.style
+      style: state.style,
+      fitScale: defaultFitScale()
     };
     fillForms(); update();
   });
@@ -1412,6 +1729,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
         }
         cv.photo = state.cv.photo;
         state.cv = { ...emptyCV(), ...cv };
+        state.fitScale.cv = 1;
       } else {
         const lettre = readGeminiStrings(parsed,
           ["expNom", "expAdresse", "expEmail", "expTel", "destNom", "destAdresse", "lieu", "date", "objet", "p1", "p2", "p3", "p4", "formule", "signature"]);
@@ -1420,6 +1738,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
           ...emptyLettre(),
           ...lettre
         };
+        state.fitScale.lettre = 1;
       }
       fillForms();
       update();
@@ -1438,12 +1757,14 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
 
   $("btn-load-cv-example").addEventListener("click", () => {
     state.cv = JSON.parse(JSON.stringify(cvExamples[$("cv-example").value]));
+    state.fitScale.cv = 1;
     fillForms();
     update();
     setTab("cv");
   });
   $("btn-load-letter-example").addEventListener("click", () => {
     state.lettre = JSON.parse(JSON.stringify(letterExamples[$("letter-example").value]));
+    state.fitScale.lettre = 1;
     fillForms();
     update();
     setTab("lettre");
@@ -1451,7 +1772,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
 
   $("btn-clear").addEventListener("click", () => {
     if (!confirm("Effacer tout le contenu du CV et de la lettre ?")) return;
-    state = { cv: emptyCV(), lettre: emptyLettre(), style: defaultStyle() };
+    state = { cv: emptyCV(), lettre: emptyLettre(), style: defaultStyle(), fitScale: defaultFitScale() };
     fillForms(); update();
     try {
       localStorage.removeItem(KEY);
@@ -1765,6 +2086,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
 
   function showImported(parsed, node, kind) {
     Object.assign(state.cv, parsed);
+    state.fitScale.cv = 1;
     fillForms();                        // remplit les champs et libère l'import précédent
     importedSourceEl = node;
     importedSourceKind = kind;
@@ -2091,7 +2413,7 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
       const sidebar = [];
       const main = [];
       const experiences = newestFirstExperiences(c.exps).map(({ item }) => item).filter(item => item.poste || item.ent || item.dates || item.desc);
-      const formations = c.formations.filter(item => item.diplome || item.ecole || item.annee);
+      const formations = newestFirstFormations(c.formations).map(({ item }) => item).filter(item => item.diplome || item.ecole || item.annee);
       const addExperienceSection = (target, inSidebar = false) => {
         if (!experiences.length) return;
         target.push(wordHeading("Expériences professionnelles", inSidebar ? { color: "FFFFFF", sidebar: true } : {}));
@@ -2139,8 +2461,13 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
           main.push(wordHeading("Profil"));
           main.push(wordParagraph(c.profil, { alignment: AlignmentType.JUSTIFIED, spacing: { after: 150, line: 270, lineRule: "auto" } }));
         }
-        addExperienceSection(main);
-        addFormationSection(main);
+        if (state.style.sectionOrder === "formations-first") {
+          addFormationSection(main);
+          addExperienceSection(main);
+        } else {
+          addExperienceSection(main);
+          addFormationSection(main);
+        }
 
         const sideWidth = 3150;
         const mainWidth = 7056;
@@ -2207,8 +2534,13 @@ Quand les informations sont suffisantes, réponds avec un objet JSON valide uniq
           children.push(wordHeading("Profil"));
           children.push(wordParagraph(c.profil, { alignment: AlignmentType.JUSTIFIED, spacing: { after: 150, line: 270, lineRule: "auto" } }));
         }
-        addExperienceSection(children);
-        addFormationSection(children);
+        if (state.style.sectionOrder === "formations-first") {
+          addFormationSection(children);
+          addExperienceSection(children);
+        } else {
+          addExperienceSection(children);
+          addFormationSection(children);
+        }
         [["Compétences", c.competences], ["Langues", c.langues], ["Permis", c.permis], ["Centres d’intérêt", c.centresInteret]]
           .filter(([, value]) => value)
           .forEach(([heading, value]) => {
